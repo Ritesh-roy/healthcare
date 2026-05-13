@@ -15,7 +15,7 @@ import {
 } from "@/lib/mock-data";
 import { Plus, Search } from "lucide-react";
 
-export const Route = createFileRoute("/referrals")({
+export const Route = createFileRoute("/referrals/")({
   head: () => ({
     meta: [
       { title: "Referrals — Refera" },
