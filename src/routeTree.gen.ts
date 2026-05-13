@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ReferralsRouteImport } from './routes/referrals'
 import { Route as PatientsRouteImport } from './routes/patients'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ConsultationsRouteImport } from './routes/consultations'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as IndexRouteImport } from './routes/index'
@@ -25,6 +26,11 @@ const ReferralsRoute = ReferralsRouteImport.update({
 const PatientsRoute = PatientsRouteImport.update({
   id: '/patients',
   path: '/patients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConsultationsRoute = ConsultationsRouteImport.update({
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
   '/consultations': typeof ConsultationsRoute
+  '/login': typeof LoginRoute
   '/patients': typeof PatientsRoute
   '/referrals': typeof ReferralsRouteWithChildren
   '/referrals/$id': typeof ReferralsIdRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
   '/consultations': typeof ConsultationsRoute
+  '/login': typeof LoginRoute
   '/patients': typeof PatientsRoute
   '/referrals': typeof ReferralsRouteWithChildren
   '/referrals/$id': typeof ReferralsIdRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
   '/consultations': typeof ConsultationsRoute
+  '/login': typeof LoginRoute
   '/patients': typeof PatientsRoute
   '/referrals': typeof ReferralsRouteWithChildren
   '/referrals/$id': typeof ReferralsIdRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/appointments'
     | '/consultations'
+    | '/login'
     | '/patients'
     | '/referrals'
     | '/referrals/$id'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/'
     | '/appointments'
     | '/consultations'
+    | '/login'
     | '/patients'
     | '/referrals'
     | '/referrals/$id'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/appointments'
     | '/consultations'
+    | '/login'
     | '/patients'
     | '/referrals'
     | '/referrals/$id'
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppointmentsRoute: typeof AppointmentsRoute
   ConsultationsRoute: typeof ConsultationsRoute
+  LoginRoute: typeof LoginRoute
   PatientsRoute: typeof PatientsRoute
   ReferralsRoute: typeof ReferralsRouteWithChildren
 }
@@ -133,6 +146,13 @@ declare module '@tanstack/react-router' {
       path: '/patients'
       fullPath: '/patients'
       preLoaderRoute: typeof PatientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/consultations': {
@@ -191,6 +211,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppointmentsRoute: AppointmentsRoute,
   ConsultationsRoute: ConsultationsRoute,
+  LoginRoute: LoginRoute,
   PatientsRoute: PatientsRoute,
   ReferralsRoute: ReferralsRouteWithChildren,
 }
