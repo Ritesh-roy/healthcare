@@ -9,38 +9,146 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ReferralsRouteImport } from './routes/referrals'
+import { Route as PatientsRouteImport } from './routes/patients'
+import { Route as ConsultationsRouteImport } from './routes/consultations'
+import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ReferralsNewRouteImport } from './routes/referrals.new'
+import { Route as ReferralsIdRouteImport } from './routes/referrals.$id'
 
+const ReferralsRoute = ReferralsRouteImport.update({
+  id: '/referrals',
+  path: '/referrals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PatientsRoute = PatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsultationsRoute = ConsultationsRouteImport.update({
+  id: '/consultations',
+  path: '/consultations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppointmentsRoute = AppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReferralsNewRoute = ReferralsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => ReferralsRoute,
+} as any)
+const ReferralsIdRoute = ReferralsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ReferralsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/appointments': typeof AppointmentsRoute
+  '/consultations': typeof ConsultationsRoute
+  '/patients': typeof PatientsRoute
+  '/referrals': typeof ReferralsRouteWithChildren
+  '/referrals/$id': typeof ReferralsIdRoute
+  '/referrals/new': typeof ReferralsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/appointments': typeof AppointmentsRoute
+  '/consultations': typeof ConsultationsRoute
+  '/patients': typeof PatientsRoute
+  '/referrals': typeof ReferralsRouteWithChildren
+  '/referrals/$id': typeof ReferralsIdRoute
+  '/referrals/new': typeof ReferralsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/appointments': typeof AppointmentsRoute
+  '/consultations': typeof ConsultationsRoute
+  '/patients': typeof PatientsRoute
+  '/referrals': typeof ReferralsRouteWithChildren
+  '/referrals/$id': typeof ReferralsIdRoute
+  '/referrals/new': typeof ReferralsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/appointments'
+    | '/consultations'
+    | '/patients'
+    | '/referrals'
+    | '/referrals/$id'
+    | '/referrals/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/appointments'
+    | '/consultations'
+    | '/patients'
+    | '/referrals'
+    | '/referrals/$id'
+    | '/referrals/new'
+  id:
+    | '__root__'
+    | '/'
+    | '/appointments'
+    | '/consultations'
+    | '/patients'
+    | '/referrals'
+    | '/referrals/$id'
+    | '/referrals/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppointmentsRoute: typeof AppointmentsRoute
+  ConsultationsRoute: typeof ConsultationsRoute
+  PatientsRoute: typeof PatientsRoute
+  ReferralsRoute: typeof ReferralsRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/referrals': {
+      id: '/referrals'
+      path: '/referrals'
+      fullPath: '/referrals'
+      preLoaderRoute: typeof ReferralsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/patients': {
+      id: '/patients'
+      path: '/patients'
+      fullPath: '/patients'
+      preLoaderRoute: typeof PatientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consultations': {
+      id: '/consultations'
+      path: '/consultations'
+      fullPath: '/consultations'
+      preLoaderRoute: typeof ConsultationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/appointments': {
+      id: '/appointments'
+      path: '/appointments'
+      fullPath: '/appointments'
+      preLoaderRoute: typeof AppointmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +156,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/referrals/new': {
+      id: '/referrals/new'
+      path: '/new'
+      fullPath: '/referrals/new'
+      preLoaderRoute: typeof ReferralsNewRouteImport
+      parentRoute: typeof ReferralsRoute
+    }
+    '/referrals/$id': {
+      id: '/referrals/$id'
+      path: '/$id'
+      fullPath: '/referrals/$id'
+      preLoaderRoute: typeof ReferralsIdRouteImport
+      parentRoute: typeof ReferralsRoute
+    }
   }
 }
 
+interface ReferralsRouteChildren {
+  ReferralsIdRoute: typeof ReferralsIdRoute
+  ReferralsNewRoute: typeof ReferralsNewRoute
+}
+
+const ReferralsRouteChildren: ReferralsRouteChildren = {
+  ReferralsIdRoute: ReferralsIdRoute,
+  ReferralsNewRoute: ReferralsNewRoute,
+}
+
+const ReferralsRouteWithChildren = ReferralsRoute._addFileChildren(
+  ReferralsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppointmentsRoute: AppointmentsRoute,
+  ConsultationsRoute: ConsultationsRoute,
+  PatientsRoute: PatientsRoute,
+  ReferralsRoute: ReferralsRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
