@@ -74,6 +74,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, ready } = useAuth();
   const [search, setSearch] = useState("");
   const [dark, setDark] = useState(true);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  // Close mobile nav on route change
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.pathname]);
 
   // Auth guard — redirect unauthenticated users to /login
   useEffect(() => {
@@ -109,63 +115,37 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen bg-background text-foreground">
       {/* Sidebar */}
       <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-border bg-sidebar text-sidebar-foreground">
-        <div className="px-5 py-5 flex items-center gap-2.5 border-b border-sidebar-border">
-          <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shadow-glow">
-            <Activity className="h-4 w-4 text-primary-foreground" strokeWidth={2.5} />
-          </div>
-          <div className="leading-tight">
-            <div className="text-sm font-semibold tracking-tight">Refera</div>
-            <div className="text-[11px] text-muted-foreground">Clinical referrals</div>
-          </div>
-        </div>
-
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          <div className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Workspace
-          </div>
-          {nav.map((item) => {
-            const isActive =
-              item.to === "/"
-                ? location.pathname === "/"
-                : location.pathname.startsWith(item.to);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-elegant"
-                    : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                <span className="flex-1">{item.label}</span>
-                <span className="text-[10px] text-muted-foreground/70 font-normal">{item.hint}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="px-3 py-3 border-t border-sidebar-border">
-          <div className="rounded-lg border border-sidebar-border bg-sidebar-accent/40 p-3 space-y-2">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Organisation</span>
-            </div>
-            <div className="text-sm font-medium leading-tight">{active.organization}</div>
-            <div className="text-[11px] text-muted-foreground">FHIR R4 endpoint healthy</div>
-          </div>
-        </div>
+        <SidebarBody pathname={location.pathname} organization={active.organization} />
       </aside>
+
+      {/* Mobile sidebar */}
+      <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+        <SheetContent
+          side="left"
+          className="w-64 p-0 bg-sidebar text-sidebar-foreground border-r border-border"
+        >
+          <SidebarBody pathname={location.pathname} organization={active.organization} />
+        </SheetContent>
+      </Sheet>
 
       {/* Main column */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-md">
           {/* Row 1 — utility bar */}
-          <div className="flex items-center gap-3 px-6 h-14">
-            <form onSubmit={submitSearch} className="relative flex-1 max-w-md">
+          <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-6 h-14">
+            <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="md:hidden text-muted-foreground hover:text-foreground"
+                  aria-label="Open menu"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+            </Sheet>
+            <form onSubmit={submitSearch} className="relative flex-1 max-w-md hidden sm:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={search}
@@ -173,10 +153,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 placeholder="Search patients, referrals, specialists…"
                 className="pl-9 pr-14 h-9 bg-input/60 border-border"
               />
-              <kbd className="hidden sm:inline-flex absolute right-2 top-1/2 -translate-y-1/2 items-center gap-1 rounded border border-border bg-muted/60 px-1.5 py-0.5 text-[10px] text-muted-foreground">
+              <kbd className="hidden md:inline-flex absolute right-2 top-1/2 -translate-y-1/2 items-center gap-1 rounded border border-border bg-muted/60 px-1.5 py-0.5 text-[10px] text-muted-foreground">
                 ⌘K
               </kbd>
             </form>
+            <div className="sm:hidden flex items-center gap-2 flex-1">
+              <div className="h-8 w-8 rounded-lg bg-gradient-primary grid place-items-center shadow-glow">
+                <Activity className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={2.5} />
+              </div>
+              <span className="text-sm font-semibold tracking-tight">Refera</span>
+            </div>
 
             <div className="flex-1" />
 
@@ -272,12 +258,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </DropdownMenu>
 
             <Link to="/referrals/new">
-              <Button className="bg-gradient-primary text-primary-foreground hover:opacity-95 shadow-glow gap-1.5">
-                <Plus className="h-4 w-4" /> New referral
+              <Button className="bg-gradient-primary text-primary-foreground hover:opacity-95 shadow-glow gap-1.5 px-2.5 sm:px-4">
+                <Plus className="h-4 w-4" /> <span className="hidden sm:inline">New referral</span>
               </Button>
             </Link>
 
-            <Separator orientation="vertical" className="h-7 mx-1" />
+            <Separator orientation="vertical" className="h-7 mx-1 hidden sm:block" />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -316,7 +302,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Row 2 — context bar with breadcrumbs */}
-          <div className="flex items-center gap-2 px-6 h-10 border-t border-border/60 bg-background/40">
+          <div className="flex items-center gap-2 px-3 sm:px-6 h-10 border-t border-border/60 bg-background/40">
             <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-muted-foreground">
               {crumbs.map((c, i) => (
                 <span key={i} className="flex items-center gap-1.5">
@@ -338,6 +324,62 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <main className="flex-1 overflow-auto">{children}</main>
+      </div>
+    </div>
+  );
+}
+
+function SidebarBody({ pathname, organization }: { pathname: string; organization: string }) {
+  return (
+    <div className="flex h-full flex-col">
+      <div className="px-5 py-5 flex items-center gap-2.5 border-b border-sidebar-border">
+        <div className="h-9 w-9 rounded-xl bg-gradient-primary grid place-items-center shadow-glow">
+          <Activity className="h-4 w-4 text-primary-foreground" strokeWidth={2.5} />
+        </div>
+        <div className="leading-tight">
+          <div className="text-sm font-semibold tracking-tight">Refera</div>
+          <div className="text-[11px] text-muted-foreground">Clinical referrals</div>
+        </div>
+      </div>
+
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <div className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Workspace
+        </div>
+        {nav.map((item) => {
+          const isActive =
+            item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                isActive
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-elegant"
+                  : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground",
+              )}
+            >
+              <Icon className="h-4 w-4" />
+              <span className="flex-1">{item.label}</span>
+              <span className="text-[10px] text-muted-foreground/70 font-normal">{item.hint}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="px-3 py-3 border-t border-sidebar-border">
+        <div className="rounded-lg border border-sidebar-border bg-sidebar-accent/40 p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+              Organisation
+            </span>
+          </div>
+          <div className="text-sm font-medium leading-tight">{organization}</div>
+          <div className="text-[11px] text-muted-foreground">FHIR R4 endpoint healthy</div>
+        </div>
       </div>
     </div>
   );
