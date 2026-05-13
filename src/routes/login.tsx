@@ -26,8 +26,8 @@ function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   // sign in
-  const [email, setEmail] = useState("eleanor.voss@riverside.health");
-  const [password, setPassword] = useState("demo");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   // sign up
   const [name, setName] = useState("");
@@ -55,7 +55,20 @@ function LoginPage() {
       toast.error("Enter your email and password.");
       return;
     }
-    finish({ ...DEFAULT_USER, email }, "Signed in");
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters.");
+      return;
+    }
+    const local = email.split("@")[0] || "Clinician";
+    const inferredName = local
+      .split(/[._-]+/)
+      .filter(Boolean)
+      .map((p) => p[0].toUpperCase() + p.slice(1))
+      .join(" ");
+    finish(
+      { ...DEFAULT_USER, name: `Dr. ${inferredName}`, email },
+      "Signed in",
+    );
   };
 
   const onSignUp = (e: React.FormEvent) => {
@@ -64,10 +77,12 @@ function LoginPage() {
       toast.error("Please complete every field.");
       return;
     }
+    if (signupPassword.length < 8) {
+      toast.error("Password must be at least 8 characters.");
+      return;
+    }
     finish({ name, email: signupEmail, role, organization: org }, "Account created");
   };
-
-  const useDemo = () => finish(DEFAULT_USER, "Signed in as demo clinician");
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-background text-foreground">
