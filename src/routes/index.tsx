@@ -120,11 +120,11 @@ function Dashboard() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-[1400px] space-y-6 px-6 py-6">
+      <div className="mx-auto max-w-[1400px] space-y-6 px-4 py-5 sm:px-6 sm:py-6">
         {/* Hero + Insights */}
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
           {/* Hero greeting */}
-          <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-hero p-7 shadow-elegant lg:col-span-2">
+          <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-gradient-hero p-5 sm:p-7 shadow-elegant lg:col-span-2">
             <div
               className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full opacity-40 blur-3xl"
               style={{ background: "var(--gradient-primary)" }}
@@ -140,7 +140,7 @@ function Dashboard() {
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
                     Live workspace
                   </div>
-                  <h1 className="font-display text-4xl leading-tight text-foreground">
+                  <h1 className="font-display text-2xl sm:text-3xl md:text-4xl leading-tight text-foreground">
                     {now ? greetingFor(now) : "Welcome back"},{" "}
                     <span className="text-gradient-primary">{firstName}</span>
                   </h1>
@@ -167,7 +167,7 @@ function Dashboard() {
 
               <div className="flex flex-wrap items-end justify-between gap-6">
                 <div>
-                  <div className="font-display text-6xl tabular-nums leading-none text-foreground">
+                  <div className="font-display text-4xl sm:text-5xl md:text-6xl tabular-nums leading-none text-foreground">
                     {now
                       ? now
                           .toLocaleTimeString(undefined, {
