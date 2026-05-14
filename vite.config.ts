@@ -7,13 +7,6 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
-  // Disable Cloudflare Worker build so the output is a plain static SPA
-  // that can be deployed on Vercel (or any static host).
-  cloudflare: false,
-  tanstackStart: {
-    // SPA mode: emits a static index.html shell + client bundle in dist/client.
-    spa: { enabled: true },
-  },
   vite: {
     preview: {
       allowedHosts: [
@@ -23,8 +16,6 @@ export default defineConfig({
         "*.vercel.app",
         "*.vercel.com",
         "*.render.com",
-
-        
       ],
     },
   },
