@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import {
   appointments,
   getPatient,
@@ -14,6 +15,11 @@ import {
   practitioners,
   referrals,
   statusMeta,
+  urgencyMeta,
+  type Patient,
+  type Practitioner,
+  type Referral,
+  type Appointment,
 } from "@/lib/mock-data";
 import { getStoredAppointments, subscribeAppointments } from "@/lib/appointments-store";
 
@@ -28,6 +34,14 @@ function AdminPage() {
   const [stored, setStored] = useState(() => getStoredAppointments());
   useEffect(() => subscribeAppointments(() => setStored(getStoredAppointments())), []);
   const allAppointments = useMemo(() => [...appointments, ...stored], [stored]);
+
+  const [detail, setDetail] = useState<
+    | { kind: "patient"; data: Patient }
+    | { kind: "doctor"; data: Practitioner }
+    | { kind: "referral"; data: Referral }
+    | { kind: "appointment"; data: Appointment }
+    | null
+  >(null);
 
   const fPatients = useMemo(
     () =>
@@ -157,7 +171,11 @@ function AdminPage() {
                   </thead>
                   <tbody className="divide-y divide-border">
                     {fPatients.map((p) => (
-                      <tr key={p.id} className="hover:bg-accent/40">
+                      <tr
+                        key={p.id}
+                        className="hover:bg-accent/40 cursor-pointer"
+                        onClick={() => setDetail({ kind: "patient", data: p })}
+                      >
                         <td className="px-5 py-3 font-medium">{p.name}</td>
                         <td className="px-5 py-3 text-muted-foreground font-mono text-xs">{p.mrn}</td>
                         <td className="px-5 py-3 text-muted-foreground">{p.dob}</td>
@@ -186,7 +204,11 @@ function AdminPage() {
                   </thead>
                   <tbody className="divide-y divide-border">
                     {fDoctors.map((d) => (
-                      <tr key={d.id} className="hover:bg-accent/40">
+                      <tr
+                        key={d.id}
+                        className="hover:bg-accent/40 cursor-pointer"
+                        onClick={() => setDetail({ kind: "doctor", data: d })}
+                      >
                         <td className="px-5 py-3 font-medium">{d.name}</td>
                         <td className="px-5 py-3 text-muted-foreground">{d.role}</td>
                         <td className="px-5 py-3 text-muted-foreground">{d.specialty ?? "—"}</td>
@@ -219,12 +241,12 @@ function AdminPage() {
                       const sp = getPractitioner(r.toSpecialistId);
                       const sm = statusMeta(r.status);
                       return (
-                        <tr key={r.id} className="hover:bg-accent/40">
-                          <td className="px-5 py-3 font-mono text-xs">
-                            <Link to="/referrals/$id" params={{ id: r.id }} className="text-primary hover:underline">
-                              {r.id}
-                            </Link>
-                          </td>
+                        <tr
+                          key={r.id}
+                          className="hover:bg-accent/40 cursor-pointer"
+                          onClick={() => setDetail({ kind: "referral", data: r })}
+                        >
+                          <td className="px-5 py-3 font-mono text-xs text-primary">{r.id}</td>
                           <td className="px-5 py-3 font-medium">{p?.name}</td>
                           <td className="px-5 py-3 text-muted-foreground">{sp?.name}</td>
                           <td className="px-5 py-3 text-muted-foreground">{r.specialty}</td>
@@ -258,7 +280,11 @@ function AdminPage() {
                       const sp = getPractitioner(a.specialistId);
                       const d = new Date(a.startsAt);
                       return (
-                        <tr key={a.id} className="hover:bg-accent/40">
+                        <tr
+                          key={a.id}
+                          className="hover:bg-accent/40 cursor-pointer"
+                          onClick={() => setDetail({ kind: "appointment", data: a })}
+                        >
                           <td className="px-5 py-3 tabular-nums">
                             {d.toLocaleDateString()} · {d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
                           </td>
@@ -276,6 +302,144 @@ function AdminPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
+        <DialogContent className="max-w-lg">
+          {detail && <DetailView detail={detail} />}
+        </DialogContent>
+      </Dialog>
     </AppShell>
+  );
+}
+
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-3 gap-3 py-2 border-b border-border/60 last:border-0">
+      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="col-span-2 text-sm">{value ?? "—"}</div>
+    </div>
+  );
+}
+
+function DetailView({
+  detail,
+}: {
+  detail:
+    | { kind: "patient"; data: Patient }
+    | { kind: "doctor"; data: Practitioner }
+    | { kind: "referral"; data: Referral }
+    | { kind: "appointment"; data: Appointment };
+}) {
+  if (detail.kind === "patient") {
+    const p = detail.data;
+    return (
+      <>
+        <DialogHeader>
+          <DialogTitle>{p.name}</DialogTitle>
+          <DialogDescription>Patient · {p.mrn}</DialogDescription>
+        </DialogHeader>
+        <div className="mt-2">
+          <Row label="MRN" value={<span className="font-mono text-xs">{p.mrn}</span>} />
+          <Row label="Date of birth" value={p.dob} />
+          <Row label="Sex" value={p.sex} />
+          <Row label="Phone" value={p.phone} />
+          <Row label="Problems" value={p.problems.join(", ")} />
+          <Row
+            label="Referrals"
+            value={referrals.filter((r) => r.patientId === p.id).map((r) => r.id).join(", ") || "None"}
+          />
+        </div>
+      </>
+    );
+  }
+  if (detail.kind === "doctor") {
+    const d = detail.data;
+    return (
+      <>
+        <DialogHeader>
+          <DialogTitle>{d.name}</DialogTitle>
+          <DialogDescription>{d.role} · {d.organization}</DialogDescription>
+        </DialogHeader>
+        <div className="mt-2">
+          <Row label="Role" value={d.role} />
+          <Row label="Specialty" value={d.specialty ?? "—"} />
+          <Row label="Organisation" value={d.organization} />
+          <Row
+            label="Referrals received"
+            value={referrals.filter((r) => r.toSpecialistId === d.id).length}
+          />
+          <Row
+            label="Appointments"
+            value={appointments.filter((a) => a.specialistId === d.id).length}
+          />
+        </div>
+      </>
+    );
+  }
+  if (detail.kind === "referral") {
+    const r = detail.data;
+    const p = getPatient(r.patientId);
+    const sp = getPractitioner(r.toSpecialistId);
+    const gp = getPractitioner(r.fromGpId);
+    const sm = statusMeta(r.status);
+    const um = urgencyMeta(r.urgency);
+    return (
+      <>
+        <DialogHeader>
+          <DialogTitle className="font-mono">{r.id}</DialogTitle>
+          <DialogDescription>{r.specialty} · {sm.label}</DialogDescription>
+        </DialogHeader>
+        <div className="mt-2">
+          <Row label="Patient" value={p?.name} />
+          <Row label="From GP" value={gp?.name} />
+          <Row label="To specialist" value={sp?.name} />
+          <Row label="Specialty" value={r.specialty} />
+          <Row label="Reason" value={r.reason} />
+          <Row label="Diagnosis" value={r.diagnosis} />
+          <Row label="Urgency" value={<StatusBadge tone={um.tone}>{um.label}</StatusBadge>} />
+          <Row label="Status" value={<StatusBadge tone={sm.tone}>{sm.label}</StatusBadge>} />
+          <Row label="Created" value={new Date(r.createdAt).toLocaleString()} />
+          <Row label="Updated" value={new Date(r.updatedAt).toLocaleString()} />
+          <Row
+            label="Attachments"
+            value={r.attachments.length ? r.attachments.map((a) => `${a.name} (${a.size})`).join(", ") : "None"}
+          />
+          {r.notes && <Row label="Notes" value={r.notes} />}
+        </div>
+        <div className="mt-3">
+          <Link
+            to="/referrals/$id"
+            params={{ id: r.id }}
+            className="text-sm text-primary hover:underline"
+          >
+            Open full referral →
+          </Link>
+        </div>
+      </>
+    );
+  }
+  const a = detail.data;
+  const p = getPatient(a.patientId);
+  const sp = getPractitioner(a.specialistId);
+  const d = new Date(a.startsAt);
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>Appointment</DialogTitle>
+        <DialogDescription>
+          {d.toLocaleDateString()} · {d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+        </DialogDescription>
+      </DialogHeader>
+      <div className="mt-2">
+        <Row label="Patient" value={p?.name ?? a.patientId} />
+        <Row label="Specialist" value={sp?.name ?? a.specialistId} />
+        <Row label="Date" value={d.toLocaleDateString()} />
+        <Row label="Time" value={d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })} />
+        <Row label="Duration" value={`${a.durationMin} min`} />
+        <Row label="Location" value={a.location} />
+        <Row label="Referral" value={a.referralId || "—"} />
+        <Row label="Appointment ID" value={<span className="font-mono text-xs">{a.id}</span>} />
+      </div>
+    </>
   );
 }
