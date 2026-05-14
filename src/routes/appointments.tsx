@@ -61,7 +61,7 @@ function AppointmentsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
               {days.map((d) => {
                 const items = byDay(d);
                 const isToday = d.toDateString() === new Date().toDateString();
