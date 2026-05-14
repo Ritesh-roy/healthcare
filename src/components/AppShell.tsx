@@ -48,7 +48,7 @@ const nav = [
   { to: "/patients", label: "Patients", icon: Users, hint: "Active panel" },
   { to: "/appointments", label: "Appointments", icon: CalendarDays, hint: "Calendar" },
   { to: "/consultations", label: "Consultations", icon: FileText, hint: "Outcomes" },
-  { to: "/admin", label: "Admin", icon: ShieldAlert, hint: "All data" },
+  { to: "/admin", label: "Admin", icon: ShieldAlert, hint: "All data", adminOnly: true },
 ] as const;
 
 const NOTIFICATIONS = [
@@ -91,6 +91,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [ready, user, location.pathname, navigate]);
 
+  // Admin route guard — only Admins can view /admin
+  useEffect(() => {
+    if (ready && user && location.pathname.startsWith("/admin") && user.role !== "Admin") {
+      toast.error("Admin access only", { description: "You don't have permission to view this page." });
+      navigate({ to: "/" });
+    }
+  }, [ready, user, location.pathname, navigate]);
+
   // Theme toggle (root <html> already uses .dark)
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -118,7 +126,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen bg-background text-foreground">
       {/* Sidebar */}
       <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-border bg-sidebar text-sidebar-foreground">
-        <SidebarBody pathname={location.pathname} organization={active.organization} />
+        <SidebarBody pathname={location.pathname} organization={active.organization} role={active.role} />
       </aside>
 
       {/* Mobile sidebar */}
@@ -127,7 +135,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           side="left"
           className="w-64 p-0 bg-sidebar text-sidebar-foreground border-r border-border"
         >
-          <SidebarBody pathname={location.pathname} organization={active.organization} />
+          <SidebarBody pathname={location.pathname} organization={active.organization} role={active.role} />
         </SheetContent>
       </Sheet>
 
@@ -329,7 +337,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SidebarBody({ pathname, organization }: { pathname: string; organization: string }) {
+function SidebarBody({ pathname, organization, role }: { pathname: string; organization: string; role: AuthUser["role"] }) {
+  const visibleNav = nav.filter((n) => !("adminOnly" in n && n.adminOnly) || role === "Admin");
   return (
     <div className="flex h-full flex-col">
       <div className="px-5 py-5 flex items-center gap-2.5 border-b border-sidebar-border">
@@ -346,7 +355,7 @@ function SidebarBody({ pathname, organization }: { pathname: string; organizatio
         <div className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           Workspace
         </div>
-        {nav.map((item) => {
+        {visibleNav.map((item) => {
           const isActive =
             item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
           const Icon = item.icon;
@@ -354,6 +363,7 @@ function SidebarBody({ pathname, organization }: { pathname: string; organizatio
             <Link
               key={item.to}
               to={item.to}
+              title={`${item.label} — ${item.hint}`}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive

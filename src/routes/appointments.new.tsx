@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { CalendarPlus, ArrowLeft } from "lucide-react";
+import { useMemo, useState } from "react";
+import { CalendarPlus, ArrowLeft, Download, Check, Printer } from "lucide-react";
+import jsPDF from "jspdf";
 import { AppShell } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { patients, practitioners, referrals } from "@/lib/mock-data";
+import { patients, practitioners, referrals, getPatient, getPractitioner } from "@/lib/mock-data";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/appointments/new")({
@@ -35,6 +36,16 @@ function NewAppointmentPage() {
   const [duration, setDuration] = useState<string>("30");
   const [location, setLocation] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
+  const [confirmed, setConfirmed] = useState<null | {
+    id: string;
+    bookedAt: string;
+  }>(null);
+
+  const patient = useMemo(() => (patientId ? getPatient(patientId) : null), [patientId]);
+  const specialist = useMemo(
+    () => (specialistId ? getPractitioner(specialistId) : null),
+    [specialistId],
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,10 +53,61 @@ function NewAppointmentPage() {
       toast.error("Please complete patient, specialist, date and time.");
       return;
     }
+    const id = `APT-${Date.now().toString(36).toUpperCase()}`;
+    setConfirmed({ id, bookedAt: new Date().toISOString() });
     toast.success("Appointment booked", {
       description: `${date} at ${time} · ${location || "Location TBC"}`,
     });
-    navigate({ to: "/appointments" });
+  };
+
+  const downloadPdf = () => {
+    if (!confirmed || !patient || !specialist) return;
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const startsAt = new Date(`${date}T${time}`);
+    let y = 56;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("Refera — Appointment Confirmation", 56, y);
+    y += 10;
+    doc.setDrawColor(200);
+    doc.line(56, y, 540, y);
+    y += 26;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(120);
+    doc.text(`Reference ${confirmed.id}  ·  Booked ${new Date(confirmed.bookedAt).toLocaleString()}`, 56, y);
+    y += 30;
+    doc.setTextColor(20);
+
+    const rows: [string, string][] = [
+      ["Patient", `${patient.name}  ·  MRN ${patient.mrn}`],
+      ["DOB / Phone", `${patient.dob}  ·  ${patient.phone}`],
+      ["Specialist", `${specialist.name}  ·  ${specialist.specialty ?? "—"}`],
+      ["Organisation", specialist.organization],
+      ["Date & time", startsAt.toLocaleString(undefined, { dateStyle: "full", timeStyle: "short" })],
+      ["Duration", `${duration} minutes`],
+      ["Location", location || "To be confirmed"],
+      ["Linked referral", referralId || "—"],
+      ["Notes", notes || "—"],
+    ];
+    doc.setFontSize(11);
+    rows.forEach(([k, v]) => {
+      doc.setFont("helvetica", "bold");
+      doc.text(k, 56, y);
+      doc.setFont("helvetica", "normal");
+      const lines = doc.splitTextToSize(v, 360);
+      doc.text(lines, 180, y);
+      y += 18 * Math.max(1, lines.length);
+    });
+    y += 20;
+    doc.setDrawColor(220);
+    doc.line(56, y, 540, y);
+    y += 22;
+    doc.setFontSize(9);
+    doc.setTextColor(120);
+    doc.text("This is a system-generated confirmation. Please arrive 10 minutes prior.", 56, y);
+    doc.save(`refera-appointment-${confirmed.id}.pdf`);
+    toast.success("PDF downloaded");
   };
 
   return (
@@ -64,6 +126,43 @@ function NewAppointmentPage() {
             </p>
           </div>
         </div>
+
+        {confirmed && patient && specialist && (
+          <Card className="glass-panel border-primary/40 shadow-glow">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Check className="h-4 w-4 text-primary" /> Appointment confirmed · {confirmed.id}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                <Row k="Patient" v={`${patient.name} · MRN ${patient.mrn}`} />
+                <Row k="Specialist" v={`${specialist.name} · ${specialist.specialty ?? "—"}`} />
+                <Row
+                  k="When"
+                  v={new Date(`${date}T${time}`).toLocaleString(undefined, {
+                    dateStyle: "full",
+                    timeStyle: "short",
+                  })}
+                />
+                <Row k="Duration" v={`${duration} minutes`} />
+                <Row k="Location" v={location || "TBC"} />
+                <Row k="Linked referral" v={referralId || "—"} />
+              </dl>
+              <div className="flex flex-wrap gap-2 pt-2">
+                <Button onClick={downloadPdf} className="gap-1.5 bg-gradient-primary text-primary-foreground shadow-glow">
+                  <Download className="h-4 w-4" /> Save record as PDF
+                </Button>
+                <Button variant="outline" onClick={() => window.print()} className="gap-1.5">
+                  <Printer className="h-4 w-4" /> Print
+                </Button>
+                <Button variant="ghost" onClick={() => navigate({ to: "/appointments" })}>
+                  Back to calendar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="glass-panel border-border/60">
           <CardHeader>
@@ -170,7 +269,7 @@ function NewAppointmentPage() {
                   type="submit"
                   className="bg-gradient-primary text-primary-foreground shadow-glow"
                 >
-                  Book appointment
+                  {confirmed ? "Update booking" : "Book appointment"}
                 </Button>
               </div>
             </form>
@@ -178,5 +277,14 @@ function NewAppointmentPage() {
         </Card>
       </div>
     </AppShell>
+  );
+}
+
+function Row({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="flex flex-col">
+      <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">{k}</dt>
+      <dd className="text-sm font-medium">{v}</dd>
+    </div>
   );
 }

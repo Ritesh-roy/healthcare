@@ -99,8 +99,15 @@ function LoginPage() {
       .filter(Boolean)
       .map((p) => p[0].toUpperCase() + p.slice(1))
       .join(" ");
+    const isAdmin = /^admin(@|\+|\.)/i.test(email.trim());
     finish(
-      { ...DEFAULT_USER, name: `Dr. ${inferredName}`, email },
+      {
+        ...DEFAULT_USER,
+        name: isAdmin ? "Admin · Refera" : `Dr. ${inferredName}`,
+        email,
+        role: isAdmin ? "Admin" : DEFAULT_USER.role,
+        organization: isAdmin ? "Refera HQ" : DEFAULT_USER.organization,
+      },
       "Signed in",
     );
   };
