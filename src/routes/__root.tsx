@@ -77,10 +77,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Clinician-first FHIR-ready referral platform: create, triage, schedule, and close the loop on specialist referrals." },
       { name: "author", content: "Refera" },
       { property: "og:title", content: "Refera — GP to Specialist Referrals" },
-      { property: "og:description", content: "Clinician-first FHIR-ready referral platform." },
+      { property: "og:description", content: "Clinician-first FHIR-ready referral platform: create, triage, schedule, and close the loop on specialist referrals." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Refera — GP to Specialist Referrals" },
+      { name: "twitter:description", content: "Clinician-first FHIR-ready referral platform: create, triage, schedule, and close the loop on specialist referrals." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/24d9c529-a543-4779-a32a-5b68e2d31dc6/id-preview-b280c063--e0ee1fd8-e1e6-4787-a779-0be7f2af71ca.lovable.app-1778693460832.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/24d9c529-a543-4779-a32a-5b68e2d31dc6/id-preview-b280c063--e0ee1fd8-e1e6-4787-a779-0be7f2af71ca.lovable.app-1778693460832.png" },
     ],
     links: [
       {
