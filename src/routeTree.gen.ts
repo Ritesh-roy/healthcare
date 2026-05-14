@@ -15,10 +15,12 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as ConsultationsRouteImport } from './routes/consultations'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReferralsIndexRouteImport } from './routes/referrals.index'
 import { Route as ReferralsNewRouteImport } from './routes/referrals.new'
 import { Route as ReferralsIdRouteImport } from './routes/referrals.$id'
+import { Route as AppointmentsNewRouteImport } from './routes/appointments.new'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -50,6 +52,11 @@ const AppointmentsRoute = AppointmentsRouteImport.update({
   path: '/appointments',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -70,27 +77,36 @@ const ReferralsIdRoute = ReferralsIdRouteImport.update({
   path: '/referrals/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppointmentsNewRoute = AppointmentsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AppointmentsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/appointments': typeof AppointmentsRoute
+  '/admin': typeof AdminRoute
+  '/appointments': typeof AppointmentsRouteWithChildren
   '/consultations': typeof ConsultationsRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/patients': typeof PatientsRoute
   '/settings': typeof SettingsRoute
+  '/appointments/new': typeof AppointmentsNewRoute
   '/referrals/$id': typeof ReferralsIdRoute
   '/referrals/new': typeof ReferralsNewRoute
   '/referrals/': typeof ReferralsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/appointments': typeof AppointmentsRoute
+  '/admin': typeof AdminRoute
+  '/appointments': typeof AppointmentsRouteWithChildren
   '/consultations': typeof ConsultationsRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/patients': typeof PatientsRoute
   '/settings': typeof SettingsRoute
+  '/appointments/new': typeof AppointmentsNewRoute
   '/referrals/$id': typeof ReferralsIdRoute
   '/referrals/new': typeof ReferralsNewRoute
   '/referrals': typeof ReferralsIndexRoute
@@ -98,12 +114,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/appointments': typeof AppointmentsRoute
+  '/admin': typeof AdminRoute
+  '/appointments': typeof AppointmentsRouteWithChildren
   '/consultations': typeof ConsultationsRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
   '/patients': typeof PatientsRoute
   '/settings': typeof SettingsRoute
+  '/appointments/new': typeof AppointmentsNewRoute
   '/referrals/$id': typeof ReferralsIdRoute
   '/referrals/new': typeof ReferralsNewRoute
   '/referrals/': typeof ReferralsIndexRoute
@@ -112,36 +130,42 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/appointments'
     | '/consultations'
     | '/help'
     | '/login'
     | '/patients'
     | '/settings'
+    | '/appointments/new'
     | '/referrals/$id'
     | '/referrals/new'
     | '/referrals/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/appointments'
     | '/consultations'
     | '/help'
     | '/login'
     | '/patients'
     | '/settings'
+    | '/appointments/new'
     | '/referrals/$id'
     | '/referrals/new'
     | '/referrals'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/appointments'
     | '/consultations'
     | '/help'
     | '/login'
     | '/patients'
     | '/settings'
+    | '/appointments/new'
     | '/referrals/$id'
     | '/referrals/new'
     | '/referrals/'
@@ -149,7 +173,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppointmentsRoute: typeof AppointmentsRoute
+  AdminRoute: typeof AdminRoute
+  AppointmentsRoute: typeof AppointmentsRouteWithChildren
   ConsultationsRoute: typeof ConsultationsRoute
   HelpRoute: typeof HelpRoute
   LoginRoute: typeof LoginRoute
@@ -204,6 +229,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppointmentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -232,12 +264,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReferralsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/appointments/new': {
+      id: '/appointments/new'
+      path: '/new'
+      fullPath: '/appointments/new'
+      preLoaderRoute: typeof AppointmentsNewRouteImport
+      parentRoute: typeof AppointmentsRoute
+    }
   }
 }
 
+interface AppointmentsRouteChildren {
+  AppointmentsNewRoute: typeof AppointmentsNewRoute
+}
+
+const AppointmentsRouteChildren: AppointmentsRouteChildren = {
+  AppointmentsNewRoute: AppointmentsNewRoute,
+}
+
+const AppointmentsRouteWithChildren = AppointmentsRoute._addFileChildren(
+  AppointmentsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppointmentsRoute: AppointmentsRoute,
+  AdminRoute: AdminRoute,
+  AppointmentsRoute: AppointmentsRouteWithChildren,
   ConsultationsRoute: ConsultationsRoute,
   HelpRoute: HelpRoute,
   LoginRoute: LoginRoute,

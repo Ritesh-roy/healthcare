@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { CalendarPlus } from "lucide-react";
 import { appointments, getPatient, getPractitioner } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/appointments")({
@@ -29,9 +31,16 @@ function AppointmentsPage() {
   return (
     <AppShell>
       <div className="px-4 sm:px-6 py-5 sm:py-6 max-w-[1400px] mx-auto space-y-5">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Appointments</h1>
-          <p className="text-sm text-muted-foreground mt-1">Two-week schedule across all specialists.</p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Appointments</h1>
+            <p className="text-sm text-muted-foreground mt-1">Two-week schedule across all specialists.</p>
+          </div>
+          <Link to="/appointments/new">
+            <Button className="gap-1.5 bg-gradient-primary text-primary-foreground shadow-glow">
+              <CalendarPlus className="h-4 w-4" /> Book appointment
+            </Button>
+          </Link>
         </div>
 
         <Card className="glass-panel border-border/60">

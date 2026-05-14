@@ -23,6 +23,7 @@ import {
   CheckCheck,
   AlertTriangle,
   Menu,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ const nav = [
   { to: "/patients", label: "Patients", icon: Users, hint: "Active panel" },
   { to: "/appointments", label: "Appointments", icon: CalendarDays, hint: "Calendar" },
   { to: "/consultations", label: "Consultations", icon: FileText, hint: "Outcomes" },
+  { to: "/admin", label: "Admin", icon: ShieldAlert, hint: "All data" },
 ] as const;
 
 const NOTIFICATIONS = [
@@ -64,6 +66,7 @@ function useTitleFromPath(pathname: string) {
     if (pathname.startsWith("/patients")) return { title: "Patients", crumbs: ["Workspace", "Patients"] };
     if (pathname.startsWith("/appointments")) return { title: "Appointments", crumbs: ["Workspace", "Appointments"] };
     if (pathname.startsWith("/consultations")) return { title: "Consultations", crumbs: ["Workspace", "Consultations"] };
+    if (pathname.startsWith("/admin")) return { title: "Admin", crumbs: ["Workspace", "Admin"] };
     return { title: "Refera", crumbs: ["Workspace"] };
   }, [pathname]);
 }
@@ -145,27 +148,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Button>
               </SheetTrigger>
             </Sheet>
-            <form onSubmit={submitSearch} className="relative flex-1 max-w-md hidden sm:block">
+            <form onSubmit={submitSearch} className="relative hidden sm:block flex-1 min-w-0 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search patients, referrals, specialists…"
-                className="pl-9 pr-14 h-9 bg-input/60 border-border"
+                className="pl-9 pr-14 h-9 bg-input/60 border-border w-full min-w-0"
               />
               <kbd className="hidden md:inline-flex absolute right-2 top-1/2 -translate-y-1/2 items-center gap-1 rounded border border-border bg-muted/60 px-1.5 py-0.5 text-[10px] text-muted-foreground">
                 ⌘K
               </kbd>
             </form>
-            <div className="sm:hidden flex items-center gap-2 flex-1">
+            <div className="sm:hidden flex items-center gap-2 flex-1 min-w-0">
               <div className="h-8 w-8 rounded-lg bg-gradient-primary grid place-items-center shadow-glow">
                 <Activity className="h-3.5 w-3.5 text-primary-foreground" strokeWidth={2.5} />
               </div>
               <span className="text-sm font-semibold tracking-tight">Refera</span>
             </div>
-
-            <div className="flex-1" />
-
             <Button
               variant="ghost"
               size="icon"
