@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarPlus } from "lucide-react";
 import { appointments, getPatient, getPractitioner } from "@/lib/mock-data";
+import { getStoredAppointments, subscribeAppointments } from "@/lib/appointments-store";
 
 export const Route = createFileRoute("/appointments")({
   head: () => ({ meta: [{ title: "Appointments — Refera" }] }),
@@ -11,6 +13,9 @@ export const Route = createFileRoute("/appointments")({
 });
 
 function AppointmentsPage() {
+  const [stored, setStored] = useState(() => getStoredAppointments());
+  useEffect(() => subscribeAppointments(() => setStored(getStoredAppointments())), []);
+  const all = [...appointments, ...stored];
   // Build a 14-day calendar starting from today
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -21,7 +26,7 @@ function AppointmentsPage() {
   });
 
   const byDay = (d: Date) =>
-    appointments
+    all
       .filter((a) => {
         const ad = new Date(a.startsAt);
         return ad.toDateString() === d.toDateString();
@@ -71,13 +76,14 @@ function AppointmentsPage() {
                     </div>
                     <div className="space-y-1.5">
                       {items.map((a) => {
-                        const p = getPatient(a.patientId)!;
-                        const sp = getPractitioner(a.specialistId)!;
+                        const p = getPatient(a.patientId);
+                        const sp = getPractitioner(a.specialistId);
+                        if (!p || !sp) return null;
                         return (
                           <Link
                             key={a.id}
-                            to="/referrals/$id"
-                            params={{ id: a.referralId }}
+                            to={a.referralId ? "/referrals/$id" : "/appointments"}
+                            params={a.referralId ? { id: a.referralId } : undefined as never}
                             className="block rounded-md bg-primary/15 hover:bg-primary/25 border border-primary/25 px-2 py-1.5 transition-colors"
                           >
                             <div className="text-[11px] font-semibold tabular-nums text-primary">
