@@ -24,6 +24,7 @@ import {
   AlertTriangle,
   Menu,
   ShieldAlert,
+  Database,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ const nav = [
   { to: "/appointments", label: "Appointments", icon: CalendarDays, hint: "Calendar" },
   { to: "/consultations", label: "Consultations", icon: FileText, hint: "Outcomes" },
   { to: "/admin", label: "Admin", icon: ShieldAlert, hint: "All data", adminOnly: true },
+  { to: "/masters", label: "Masters", icon: Database, hint: "Users, Roles, Depts", adminOnly: true },
 ] as const;
 
 const NOTIFICATIONS = [
@@ -67,6 +69,7 @@ function useTitleFromPath(pathname: string) {
     if (pathname.startsWith("/appointments")) return { title: "Appointments", crumbs: ["Workspace", "Appointments"] };
     if (pathname.startsWith("/consultations")) return { title: "Consultations", crumbs: ["Workspace", "Consultations"] };
     if (pathname.startsWith("/admin")) return { title: "Admin", crumbs: ["Workspace", "Admin"] };
+    if (pathname.startsWith("/masters")) return { title: "Masters", crumbs: ["Workspace", "Masters"] };
     return { title: "Refera", crumbs: ["Workspace"] };
   }, [pathname]);
 }
@@ -91,9 +94,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [ready, user, location.pathname, navigate]);
 
-  // Admin route guard — only Admins can view /admin
+  // Admin route guard — only Admins can view /admin and /masters
   useEffect(() => {
-    if (ready && user && location.pathname.startsWith("/admin") && user.role !== "Admin") {
+    if (
+      ready &&
+      user &&
+      (location.pathname.startsWith("/admin") || location.pathname.startsWith("/masters")) &&
+      user.role !== "Admin"
+    ) {
       toast.error("Admin access only", { description: "You don't have permission to view this page." });
       navigate({ to: "/" });
     }

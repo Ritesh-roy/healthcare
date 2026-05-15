@@ -29,15 +29,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import {
-  appointments,
   getPatient,
   getPractitioner,
-  patients,
-  referrals,
   statusMeta,
   urgencyMeta,
 } from "@/lib/mock-data";
 import { useAuth, DEFAULT_USER } from "@/lib/auth";
+import { scopedAppointments, scopedPatients, scopedReferrals } from "@/lib/scoped";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -88,6 +86,9 @@ function Dashboard() {
   const active = user ?? DEFAULT_USER;
   const firstName = active.name.replace(/^Dr\.\s+/, "").split(" ")[0];
   const now = useNow();
+  const referrals = scopedReferrals(user);
+  const appointments = scopedAppointments(user);
+  const patients = scopedPatients(user);
 
   const open = referrals.filter((r) =>
     ["submitted", "accepted", "scheduled"].includes(r.status),
