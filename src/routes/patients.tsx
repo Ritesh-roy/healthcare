@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { Card, CardContent } from "@/components/ui/card";
-import { patients, referrals } from "@/lib/mock-data";
+import { referrals } from "@/lib/mock-data";
+import { useAuth } from "@/lib/auth";
+import { scopedPatients, scopedReferrals } from "@/lib/scoped";
 
 export const Route = createFileRoute("/patients")({
   head: () => ({ meta: [{ title: "Patients — Refera" }] }),
@@ -9,6 +11,9 @@ export const Route = createFileRoute("/patients")({
 });
 
 function PatientsPage() {
+  const { user } = useAuth();
+  const patients = scopedPatients(user);
+  const myRefs = scopedReferrals(user);
   return (
     <AppShell>
       <div className="px-4 sm:px-6 py-5 sm:py-6 max-w-[1400px] mx-auto space-y-5">
@@ -27,8 +32,8 @@ function PatientsPage() {
               <div className="col-span-1 text-right">Referrals</div>
             </div>
             <div className="divide-y divide-border">
-              {patients.map((p) => {
-                const count = referrals.filter((r) => r.patientId === p.id).length;
+                {patients.map((p) => {
+                const count = (user && user.role !== "Admin" ? myRefs : referrals).filter((r) => r.patientId === p.id).length;
                 return (
                   <div key={p.id} className="grid grid-cols-12 items-center px-5 py-3.5 text-sm hover:bg-accent/40 transition-colors">
                     <div className="col-span-4 flex items-center gap-3 min-w-0">

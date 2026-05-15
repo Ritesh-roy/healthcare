@@ -4,8 +4,10 @@ import { AppShell } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarPlus } from "lucide-react";
-import { appointments, getPatient, getPractitioner } from "@/lib/mock-data";
-import { getStoredAppointments, subscribeAppointments } from "@/lib/appointments-store";
+import { getPatient, getPractitioner } from "@/lib/mock-data";
+import { subscribeAppointments } from "@/lib/appointments-store";
+import { useAuth } from "@/lib/auth";
+import { scopedAppointments } from "@/lib/scoped";
 
 export const Route = createFileRoute("/appointments")({
   head: () => ({ meta: [{ title: "Appointments — Refera" }] }),
@@ -14,9 +16,10 @@ export const Route = createFileRoute("/appointments")({
 
 function AppointmentsPage() {
   const location = useLocation();
-  const [stored, setStored] = useState(() => getStoredAppointments());
-  useEffect(() => subscribeAppointments(() => setStored(getStoredAppointments())), []);
-  const all = [...appointments, ...stored];
+  const { user } = useAuth();
+  const [, force] = useState(0);
+  useEffect(() => subscribeAppointments(() => force((n) => n + 1)), []);
+  const all = scopedAppointments(user);
 
   if (location.pathname !== "/appointments") {
     return <Outlet />;

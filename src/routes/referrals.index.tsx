@@ -6,13 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import {
-  referrals,
   getPatient,
   getPractitioner,
   statusMeta,
   urgencyMeta,
   type ReferralStatus,
 } from "@/lib/mock-data";
+import { useAuth } from "@/lib/auth";
+import { scopedReferrals } from "@/lib/scoped";
 import { Plus, Search } from "lucide-react";
 
 export const Route = createFileRoute("/referrals/")({
@@ -38,6 +39,8 @@ const filters: { id: "all" | ReferralStatus; label: string }[] = [
 function ReferralsPage() {
   const [filter, setFilter] = useState<(typeof filters)[number]["id"]>("all");
   const [q, setQ] = useState("");
+  const { user } = useAuth();
+  const referrals = scopedReferrals(user);
 
   const rows = useMemo(() => {
     return referrals

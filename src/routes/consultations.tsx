@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { Card, CardContent } from "@/components/ui/card";
-import { consultations, getPatient, getPractitioner, getReferral } from "@/lib/mock-data";
+import { getPatient, getPractitioner, getReferral } from "@/lib/mock-data";
+import { useAuth } from "@/lib/auth";
+import { scopedConsultations } from "@/lib/scoped";
 import { FileText } from "lucide-react";
 
 export const Route = createFileRoute("/consultations")({
@@ -10,6 +12,8 @@ export const Route = createFileRoute("/consultations")({
 });
 
 function ConsultsPage() {
+  const { user } = useAuth();
+  const consultations = scopedConsultations(user);
   return (
     <AppShell>
       <div className="px-4 sm:px-6 py-5 sm:py-6 max-w-[1100px] mx-auto space-y-5">
