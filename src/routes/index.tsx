@@ -537,6 +537,8 @@ function Legend({ dot, label }: { dot: string; label: string }) {
 }
 
 function MiniCalendar() {
+  const { user } = useAuth();
+  const appointments = scopedAppointments(user);
   const [cursor, setCursor] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
