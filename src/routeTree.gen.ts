@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as PatientsRouteImport } from './routes/patients'
+import { Route as MastersRouteImport } from './routes/masters'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as ConsultationsRouteImport } from './routes/consultations'
@@ -30,6 +31,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const PatientsRoute = PatientsRouteImport.update({
   id: '/patients',
   path: '/patients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MastersRoute = MastersRouteImport.update({
+  id: '/masters',
+  path: '/masters',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/consultations': typeof ConsultationsRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
+  '/masters': typeof MastersRoute
   '/patients': typeof PatientsRoute
   '/settings': typeof SettingsRoute
   '/appointments/new': typeof AppointmentsNewRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/consultations': typeof ConsultationsRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
+  '/masters': typeof MastersRoute
   '/patients': typeof PatientsRoute
   '/settings': typeof SettingsRoute
   '/appointments/new': typeof AppointmentsNewRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/consultations': typeof ConsultationsRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
+  '/masters': typeof MastersRoute
   '/patients': typeof PatientsRoute
   '/settings': typeof SettingsRoute
   '/appointments/new': typeof AppointmentsNewRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
     | '/consultations'
     | '/help'
     | '/login'
+    | '/masters'
     | '/patients'
     | '/settings'
     | '/appointments/new'
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/consultations'
     | '/help'
     | '/login'
+    | '/masters'
     | '/patients'
     | '/settings'
     | '/appointments/new'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/consultations'
     | '/help'
     | '/login'
+    | '/masters'
     | '/patients'
     | '/settings'
     | '/appointments/new'
@@ -178,6 +190,7 @@ export interface RootRouteChildren {
   ConsultationsRoute: typeof ConsultationsRoute
   HelpRoute: typeof HelpRoute
   LoginRoute: typeof LoginRoute
+  MastersRoute: typeof MastersRoute
   PatientsRoute: typeof PatientsRoute
   SettingsRoute: typeof SettingsRoute
   ReferralsIdRoute: typeof ReferralsIdRoute
@@ -199,6 +212,13 @@ declare module '@tanstack/react-router' {
       path: '/patients'
       fullPath: '/patients'
       preLoaderRoute: typeof PatientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/masters': {
+      id: '/masters'
+      path: '/masters'
+      fullPath: '/masters'
+      preLoaderRoute: typeof MastersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -293,6 +313,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConsultationsRoute: ConsultationsRoute,
   HelpRoute: HelpRoute,
   LoginRoute: LoginRoute,
+  MastersRoute: MastersRoute,
   PatientsRoute: PatientsRoute,
   SettingsRoute: SettingsRoute,
   ReferralsIdRoute: ReferralsIdRoute,
@@ -302,3 +323,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
