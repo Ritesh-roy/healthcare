@@ -13,6 +13,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as PatientsRouteImport } from './routes/patients'
 import { Route as MastersRouteImport } from './routes/masters'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HospitalsRouteImport } from './routes/hospitals'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as ConsultationsRouteImport } from './routes/consultations'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
@@ -41,6 +42,11 @@ const MastersRoute = MastersRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HospitalsRoute = HospitalsRouteImport.update({
+  id: '/hospitals',
+  path: '/hospitals',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpRoute = HelpRouteImport.update({
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/appointments': typeof AppointmentsRouteWithChildren
   '/consultations': typeof ConsultationsRoute
   '/help': typeof HelpRoute
+  '/hospitals': typeof HospitalsRoute
   '/login': typeof LoginRoute
   '/masters': typeof MastersRoute
   '/patients': typeof PatientsRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/appointments': typeof AppointmentsRouteWithChildren
   '/consultations': typeof ConsultationsRoute
   '/help': typeof HelpRoute
+  '/hospitals': typeof HospitalsRoute
   '/login': typeof LoginRoute
   '/masters': typeof MastersRoute
   '/patients': typeof PatientsRoute
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/appointments': typeof AppointmentsRouteWithChildren
   '/consultations': typeof ConsultationsRoute
   '/help': typeof HelpRoute
+  '/hospitals': typeof HospitalsRoute
   '/login': typeof LoginRoute
   '/masters': typeof MastersRoute
   '/patients': typeof PatientsRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/appointments'
     | '/consultations'
     | '/help'
+    | '/hospitals'
     | '/login'
     | '/masters'
     | '/patients'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/appointments'
     | '/consultations'
     | '/help'
+    | '/hospitals'
     | '/login'
     | '/masters'
     | '/patients'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/appointments'
     | '/consultations'
     | '/help'
+    | '/hospitals'
     | '/login'
     | '/masters'
     | '/patients'
@@ -189,6 +201,7 @@ export interface RootRouteChildren {
   AppointmentsRoute: typeof AppointmentsRouteWithChildren
   ConsultationsRoute: typeof ConsultationsRoute
   HelpRoute: typeof HelpRoute
+  HospitalsRoute: typeof HospitalsRoute
   LoginRoute: typeof LoginRoute
   MastersRoute: typeof MastersRoute
   PatientsRoute: typeof PatientsRoute
@@ -226,6 +239,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hospitals': {
+      id: '/hospitals'
+      path: '/hospitals'
+      fullPath: '/hospitals'
+      preLoaderRoute: typeof HospitalsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/help': {
@@ -312,6 +332,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppointmentsRoute: AppointmentsRouteWithChildren,
   ConsultationsRoute: ConsultationsRoute,
   HelpRoute: HelpRoute,
+  HospitalsRoute: HospitalsRoute,
   LoginRoute: LoginRoute,
   MastersRoute: MastersRoute,
   PatientsRoute: PatientsRoute,
