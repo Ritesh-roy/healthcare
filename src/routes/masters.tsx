@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Database, Plus, Pencil, Trash2, Users, Building2, ShieldCheck, KeyRound, UserCog } from "lucide-react";
+import { Database, Plus, Pencil, Trash2, Users, Building2, ShieldCheck, KeyRound, UserCog, Network, Clock } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -20,9 +20,11 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   masterStore, useMaster, newId,
-  type Department, type Employee, type Permission, type Role, type MasterUser,
+  type Department, type Employee, type Permission, type Role, type MasterUser, type Organization, type TimeSlot,
 } from "@/lib/master-store";
 import { practitioners } from "@/lib/mock-data";
+import "@/lib/chest-data";
+import { chestHospitals } from "@/lib/chest-data";
 
 export const Route = createFileRoute("/masters")({
   head: () => ({ meta: [{ title: "Masters — Refera" }] }),
@@ -43,9 +45,11 @@ function MastersPage() {
         </div>
 
         <Tabs defaultValue="users">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-5 w-full sm:w-auto">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-7 w-full sm:w-auto">
             <TabsTrigger value="employees" className="gap-1.5"><Users className="h-3.5 w-3.5" />Employees</TabsTrigger>
             <TabsTrigger value="departments" className="gap-1.5"><Building2 className="h-3.5 w-3.5" />Departments</TabsTrigger>
+            <TabsTrigger value="organizations" className="gap-1.5"><Network className="h-3.5 w-3.5" />Organizations</TabsTrigger>
+            <TabsTrigger value="timeslots" className="gap-1.5"><Clock className="h-3.5 w-3.5" />Time slots</TabsTrigger>
             <TabsTrigger value="users" className="gap-1.5"><UserCog className="h-3.5 w-3.5" />Users</TabsTrigger>
             <TabsTrigger value="roles" className="gap-1.5"><ShieldCheck className="h-3.5 w-3.5" />Roles</TabsTrigger>
             <TabsTrigger value="permissions" className="gap-1.5"><KeyRound className="h-3.5 w-3.5" />Permissions</TabsTrigger>
@@ -53,12 +57,171 @@ function MastersPage() {
 
           <TabsContent value="employees" className="mt-4"><EmployeesTab /></TabsContent>
           <TabsContent value="departments" className="mt-4"><DepartmentsTab /></TabsContent>
+          <TabsContent value="organizations" className="mt-4"><OrganizationsTab /></TabsContent>
+          <TabsContent value="timeslots" className="mt-4"><TimeSlotsTab /></TabsContent>
           <TabsContent value="users" className="mt-4"><UsersTab /></TabsContent>
           <TabsContent value="roles" className="mt-4"><RolesTab /></TabsContent>
           <TabsContent value="permissions" className="mt-4"><PermissionsTab /></TabsContent>
         </Tabs>
       </div>
     </AppShell>
+  );
+}
+
+/* ============ ORGANIZATIONS ============ */
+function OrganizationsTab() {
+  const items = useMaster<Organization>(masterStore.organizations);
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Organization | null>(null);
+  const empty: Organization = { id: "", name: "", hospitalIds: [], branch: "", contact: "", active: true };
+  const [form, setForm] = useState<Organization>(empty);
+
+  const startNew = () => { setEditing(null); setForm(empty); setOpen(true); };
+  const startEdit = (o: Organization) => { setEditing(o); setForm(o); setOpen(true); };
+  const remove = (id: string) => { masterStore.setOrganizations(items.filter((x) => x.id !== id)); toast.success("Organization deleted"); };
+  const save = () => {
+    if (!form.name.trim()) return toast.error("Name is required");
+    if (editing) { masterStore.setOrganizations(items.map((x) => (x.id === editing.id ? form : x))); toast.success("Organization updated"); }
+    else { masterStore.setOrganizations([...items, { ...form, id: newId("o") }]); toast.success("Organization created"); }
+    setOpen(false);
+  };
+  const toggleHosp = (id: string) => {
+    setForm((f) => ({ ...f, hospitalIds: f.hospitalIds.includes(id) ? f.hospitalIds.filter((x) => x !== id) : [...f.hospitalIds, id] }));
+  };
+
+  return (
+    <CrudCard title={`Organizations (${items.length})`} onNew={startNew}>
+      <table className="w-full text-sm min-w-[760px]">
+        <THead cols={["Name", "Branch", "Hospitals", "Contact", "Status", ""]} />
+        <tbody className="divide-y divide-border">
+          {items.map((o) => (
+            <tr key={o.id} className="hover:bg-accent/40">
+              <td className="px-5 py-3 font-medium">{o.name}</td>
+              <td className="px-5 py-3 text-muted-foreground">{o.branch}</td>
+              <td className="px-5 py-3">
+                <div className="flex flex-wrap gap-1">
+                  {o.hospitalIds.map((hid) => {
+                    const h = chestHospitals.find((x) => x.id === hid);
+                    return h ? <Badge key={hid} variant="secondary" className="text-[10px]">{h.name}</Badge> : null;
+                  })}
+                  {o.hospitalIds.length === 0 && <span className="text-xs text-muted-foreground">—</span>}
+                </div>
+              </td>
+              <td className="px-5 py-3 text-muted-foreground">{o.contact}</td>
+              <td className="px-5 py-3">
+                <span className={`inline-flex items-center gap-1.5 text-xs ${o.active ? "text-[oklch(var(--status-success))]" : "text-muted-foreground"}`}>
+                  <span className={`h-1.5 w-1.5 rounded-full ${o.active ? "bg-[oklch(var(--status-success))]" : "bg-muted-foreground"}`} />
+                  {o.active ? "Active" : "Inactive"}
+                </span>
+              </td>
+              <td className="px-5 py-3"><RowActions onEdit={() => startEdit(o)} onDelete={() => remove(o.id)} label={o.name} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <FormDialog open={open} onOpenChange={setOpen} title={editing ? "Edit organization" : "New organization"} onSave={save} wide>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Name *"><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+          <Field label="Branch"><Input value={form.branch} onChange={(e) => setForm({ ...form, branch: e.target.value })} /></Field>
+          <Field label="Contact"><Input value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })} /></Field>
+        </div>
+        <div>
+          <Label className="text-sm">Hospitals</Label>
+          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto p-3 rounded-md border border-border bg-card/40">
+            {chestHospitals.map((h) => (
+              <label key={h.id} className="flex items-start gap-2 cursor-pointer hover:bg-accent/40 rounded px-2 py-1.5">
+                <Checkbox checked={form.hospitalIds.includes(h.id)} onCheckedChange={() => toggleHosp(h.id)} />
+                <div className="min-w-0">
+                  <div className="text-sm font-medium">{h.name}</div>
+                  <div className="text-[11px] text-muted-foreground">{h.city}</div>
+                </div>
+              </label>
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center justify-between pt-2 border-t border-border/60">
+          <Label className="text-sm">Active</Label>
+          <Switch checked={form.active} onCheckedChange={(v) => setForm({ ...form, active: v })} />
+        </div>
+      </FormDialog>
+    </CrudCard>
+  );
+}
+
+/* ============ TIME SLOTS ============ */
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function TimeSlotsTab() {
+  const items = useMaster<TimeSlot>(masterStore.timeslots);
+  const specialists = practitioners.filter((p) => p.role === "Specialist");
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<TimeSlot | null>(null);
+  const empty: TimeSlot = { id: "", practitionerId: specialists[0]?.id ?? "", weekday: 1, start: "09:00", end: "13:00", emergency: false, blocked: false };
+  const [form, setForm] = useState<TimeSlot>(empty);
+
+  const startNew = () => { setEditing(null); setForm({ ...empty, practitionerId: specialists[0]?.id ?? "" }); setOpen(true); };
+  const startEdit = (s: TimeSlot) => { setEditing(s); setForm(s); setOpen(true); };
+  const remove = (id: string) => { masterStore.setTimeSlots(items.filter((x) => x.id !== id)); toast.success("Slot deleted"); };
+  const save = () => {
+    if (!form.practitionerId) return toast.error("Doctor is required");
+    if (form.start >= form.end) return toast.error("End time must be after start time");
+    if (editing) { masterStore.setTimeSlots(items.map((x) => (x.id === editing.id ? form : x))); toast.success("Slot updated"); }
+    else { masterStore.setTimeSlots([...items, { ...form, id: newId("ts") }]); toast.success("Slot created"); }
+    setOpen(false);
+  };
+  const docName = (id: string) => practitioners.find((p) => p.id === id)?.name ?? "—";
+
+  return (
+    <CrudCard title={`Time slots (${items.length})`} onNew={startNew}>
+      <table className="w-full text-sm min-w-[760px]">
+        <THead cols={["Doctor", "Weekday", "Window", "Type", "Status", ""]} />
+        <tbody className="divide-y divide-border">
+          {items.map((s) => (
+            <tr key={s.id} className="hover:bg-accent/40">
+              <td className="px-5 py-3 font-medium">{docName(s.practitionerId)}</td>
+              <td className="px-5 py-3 text-muted-foreground">{WEEKDAYS[s.weekday]}</td>
+              <td className="px-5 py-3 tabular-nums">{s.start} – {s.end}</td>
+              <td className="px-5 py-3">
+                {s.emergency
+                  ? <Badge variant="outline" className="text-[10px] border-[oklch(var(--status-danger))]/60 text-[oklch(var(--status-danger))]">Emergency</Badge>
+                  : <Badge variant="secondary" className="text-[10px]">Regular</Badge>}
+              </td>
+              <td className="px-5 py-3">
+                <span className={`text-xs ${s.blocked ? "text-[oklch(var(--status-warn))]" : "text-[oklch(var(--status-success))]"}`}>
+                  {s.blocked ? "Blocked" : "Open"}
+                </span>
+              </td>
+              <td className="px-5 py-3"><RowActions onEdit={() => startEdit(s)} onDelete={() => remove(s.id)} label={`${docName(s.practitionerId)} · ${WEEKDAYS[s.weekday]}`} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <FormDialog open={open} onOpenChange={setOpen} title={editing ? "Edit time slot" : "New time slot"} onSave={save} wide>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Doctor *">
+            <Select value={form.practitionerId} onValueChange={(v) => setForm({ ...form, practitionerId: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>{specialists.map((p) => <SelectItem key={p.id} value={p.id}>{p.name} · {p.specialty}</SelectItem>)}</SelectContent>
+            </Select>
+          </Field>
+          <Field label="Weekday">
+            <Select value={String(form.weekday)} onValueChange={(v) => setForm({ ...form, weekday: Number(v) })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>{WEEKDAYS.map((d, i) => <SelectItem key={d} value={String(i)}>{d}</SelectItem>)}</SelectContent>
+            </Select>
+          </Field>
+          <Field label="Start"><Input type="time" value={form.start} onChange={(e) => setForm({ ...form, start: e.target.value })} /></Field>
+          <Field label="End"><Input type="time" value={form.end} onChange={(e) => setForm({ ...form, end: e.target.value })} /></Field>
+        </div>
+        <div className="flex items-center justify-between pt-2 border-t border-border/60">
+          <Label className="text-sm">Emergency slot</Label>
+          <Switch checked={form.emergency} onCheckedChange={(v) => setForm({ ...form, emergency: v })} />
+        </div>
+        <div className="flex items-center justify-between">
+          <Label className="text-sm">Blocked (unavailable)</Label>
+          <Switch checked={form.blocked} onCheckedChange={(v) => setForm({ ...form, blocked: v })} />
+        </div>
+      </FormDialog>
+    </CrudCard>
   );
 }
 

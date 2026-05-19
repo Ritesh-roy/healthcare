@@ -16,12 +16,33 @@ export type MasterUser = {
   active: boolean;
 };
 
+export type Organization = {
+  id: string;
+  name: string;
+  hospitalIds: string[];
+  branch: string;
+  contact: string;
+  active: boolean;
+};
+
+export type TimeSlot = {
+  id: string;
+  practitionerId: string;
+  weekday: number; // 0=Sun .. 6=Sat
+  start: string; // "HH:mm"
+  end: string;   // "HH:mm"
+  emergency: boolean;
+  blocked: boolean;
+};
+
 const KEYS = {
   dept: "refera.master.departments",
   emp: "refera.master.employees",
   perm: "refera.master.permissions",
   role: "refera.master.roles",
   user: "refera.master.users",
+  org: "refera.master.organizations",
+  slot: "refera.master.timeslots",
 } as const;
 
 const SEED_PERMISSIONS: Permission[] = [
@@ -65,6 +86,20 @@ const SEED_USERS: MasterUser[] = [
   { id: "us5", username: "alex", email: "alex.romero@riverside.health", fullName: "Alex Romero", roleId: "r3", employeeId: "e4", active: true },
 ];
 
+const SEED_ORGS: Organization[] = [
+  { id: "o1", name: "Apex Healthcare Group", hospitalIds: ["h1"], branch: "Mumbai HQ", contact: "+91 22 4000 1100", active: true },
+  { id: "o2", name: "BreathWell Network", hospitalIds: ["h2"], branch: "Delhi NCR", contact: "+91 11 4200 5500", active: true },
+  { id: "o3", name: "MediCare Trust", hospitalIds: ["h3"], branch: "Bengaluru", contact: "+91 80 4900 7300", active: true },
+  { id: "o4", name: "St. Aldwyn NHS Trust", hospitalIds: ["h4"], branch: "London", contact: "+44 20 7946 4400", active: false },
+];
+
+const SEED_SLOTS: TimeSlot[] = [
+  { id: "ts1", practitionerId: "uc1", weekday: 1, start: "09:00", end: "13:00", emergency: false, blocked: false },
+  { id: "ts2", practitionerId: "uc1", weekday: 3, start: "14:00", end: "17:00", emergency: false, blocked: false },
+  { id: "ts3", practitionerId: "uc3", weekday: 2, start: "10:00", end: "16:00", emergency: true, blocked: false },
+  { id: "ts4", practitionerId: "u3", weekday: 4, start: "09:00", end: "12:00", emergency: false, blocked: false },
+];
+
 function load<T>(key: string, seed: T[]): T[] {
   if (typeof window === "undefined") return seed;
   try {
@@ -90,11 +125,15 @@ export const masterStore = {
   permissions: () => load<Permission>(KEYS.perm, SEED_PERMISSIONS),
   roles: () => load<Role>(KEYS.role, SEED_ROLES),
   users: () => load<MasterUser>(KEYS.user, SEED_USERS),
+  organizations: () => load<Organization>(KEYS.org, SEED_ORGS),
+  timeslots: () => load<TimeSlot>(KEYS.slot, SEED_SLOTS),
   setDepartments: (v: Department[]) => save(KEYS.dept, v),
   setEmployees: (v: Employee[]) => save(KEYS.emp, v),
   setPermissions: (v: Permission[]) => save(KEYS.perm, v),
   setRoles: (v: Role[]) => save(KEYS.role, v),
   setUsers: (v: MasterUser[]) => save(KEYS.user, v),
+  setOrganizations: (v: Organization[]) => save(KEYS.org, v),
+  setTimeSlots: (v: TimeSlot[]) => save(KEYS.slot, v),
 };
 
 export function useMaster<T>(getter: () => T[]) {
