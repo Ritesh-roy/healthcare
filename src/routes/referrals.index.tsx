@@ -73,7 +73,7 @@ function ReferralsPage() {
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[260px] max-w-md">
+          <div className="relative flex-1 min-w-0 sm:min-w-[260px] max-w-md w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={q}
@@ -82,12 +82,12 @@ function ReferralsPage() {
               className="pl-9 h-9 bg-input/60"
             />
           </div>
-          <div className="flex items-center gap-1.5 p-1 rounded-lg border border-border bg-card/40">
+          <div className="flex items-center gap-1.5 p-1 rounded-lg border border-border bg-card/40 overflow-x-auto max-w-full no-scrollbar">
             {filters.map((f) => (
               <button
                 key={f.id}
                 onClick={() => setFilter(f.id)}
-                className={`text-xs px-3 py-1.5 rounded-md transition-colors ${
+                className={`text-xs px-3 py-1.5 rounded-md transition-colors whitespace-nowrap shrink-0 ${
                   filter === f.id
                     ? "bg-accent text-accent-foreground"
                     : "text-muted-foreground hover:text-foreground"
@@ -101,7 +101,8 @@ function ReferralsPage() {
 
         <Card className="glass-panel border-border/60 overflow-hidden">
           <CardContent className="p-0">
-            <div className="grid grid-cols-12 px-5 py-3 border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
+            {/* Desktop header */}
+            <div className="hidden md:grid grid-cols-12 px-5 py-3 border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground font-medium">
               <div className="col-span-3">Patient</div>
               <div className="col-span-2">Specialty</div>
               <div className="col-span-3">Reason</div>
@@ -121,28 +122,52 @@ function ReferralsPage() {
                     key={r.id}
                     to="/referrals/$id"
                     params={{ id: r.id }}
-                    className="grid grid-cols-12 items-center px-5 py-3.5 hover:bg-accent/40 transition-colors text-sm"
+                    className="block md:grid md:grid-cols-12 md:items-center px-4 sm:px-5 py-3.5 hover:bg-accent/40 transition-colors text-sm"
                   >
-                    <div className="col-span-3 min-w-0">
+                    {/* Mobile card layout */}
+                    <div className="md:hidden space-y-1.5">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="font-medium truncate">{p.name}</div>
+                          <div className="text-[11px] text-muted-foreground truncate">
+                            {r.id} · {p.mrn}
+                          </div>
+                        </div>
+                        <div className="text-[10px] text-muted-foreground tabular-nums shrink-0">
+                          {d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {r.specialty} · {sp.name}
+                      </div>
+                      <div className="text-xs text-muted-foreground line-clamp-1">{r.reason}</div>
+                      <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                        <StatusBadge tone={um.tone} dot={false}>{um.label}</StatusBadge>
+                        <StatusBadge tone={sm.tone}>{sm.label}</StatusBadge>
+                      </div>
+                    </div>
+
+                    {/* Desktop row */}
+                    <div className="hidden md:block col-span-3 min-w-0">
                       <div className="font-medium truncate">{p.name}</div>
                       <div className="text-xs text-muted-foreground truncate">
                         {r.id} · {p.mrn}
                       </div>
                     </div>
-                    <div className="col-span-2 min-w-0">
+                    <div className="hidden md:block col-span-2 min-w-0">
                       <div className="truncate">{r.specialty}</div>
                       <div className="text-xs text-muted-foreground truncate">{sp.name}</div>
                     </div>
-                    <div className="col-span-3 min-w-0 text-muted-foreground truncate">
+                    <div className="hidden md:block col-span-3 min-w-0 text-muted-foreground truncate">
                       {r.reason}
                     </div>
-                    <div className="col-span-1">
+                    <div className="hidden md:block col-span-1">
                       <StatusBadge tone={um.tone} dot={false}>{um.label}</StatusBadge>
                     </div>
-                    <div className="col-span-2">
+                    <div className="hidden md:block col-span-2">
                       <StatusBadge tone={sm.tone}>{sm.label}</StatusBadge>
                     </div>
-                    <div className="col-span-1 text-right text-xs text-muted-foreground tabular-nums">
+                    <div className="hidden md:block col-span-1 text-right text-xs text-muted-foreground tabular-nums">
                       {d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                     </div>
                   </Link>

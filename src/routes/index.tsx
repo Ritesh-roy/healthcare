@@ -401,7 +401,7 @@ function Dashboard() {
                       key={r.id}
                       to="/referrals/$id"
                       params={{ id: r.id }}
-                      className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-accent/40"
+                      className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 transition-colors hover:bg-accent/40"
                     >
                       <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-primary text-xs font-semibold text-primary-foreground">
                         {p.name
@@ -413,16 +413,22 @@ function Dashboard() {
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
                           <div className="truncate text-sm font-medium">{p.name}</div>
-                          <div className="font-mono text-[10px] text-muted-foreground">
+                          <div className="font-mono text-[10px] text-muted-foreground shrink-0">
                             · {r.id}
                           </div>
                         </div>
                         <div className="truncate text-xs text-muted-foreground">
                           {r.specialty} → {sp.name} · {r.reason}
                         </div>
+                        <div className="mt-1.5 flex items-center gap-1.5 flex-wrap sm:hidden">
+                          <StatusBadge tone={um.tone}>{um.label}</StatusBadge>
+                          <StatusBadge tone={sm.tone}>{sm.label}</StatusBadge>
+                        </div>
                       </div>
-                      <StatusBadge tone={um.tone}>{um.label}</StatusBadge>
-                      <StatusBadge tone={sm.tone}>{sm.label}</StatusBadge>
+                      <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+                        <StatusBadge tone={um.tone}>{um.label}</StatusBadge>
+                        <StatusBadge tone={sm.tone}>{sm.label}</StatusBadge>
+                      </div>
                     </Link>
                   );
                 })}

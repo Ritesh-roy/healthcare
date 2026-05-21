@@ -45,15 +45,17 @@ function MastersPage() {
         </div>
 
         <Tabs defaultValue="users">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-7 w-full sm:w-auto">
-            <TabsTrigger value="employees" className="gap-1.5"><Users className="h-3.5 w-3.5" />Employees</TabsTrigger>
-            <TabsTrigger value="departments" className="gap-1.5"><Building2 className="h-3.5 w-3.5" />Departments</TabsTrigger>
-            <TabsTrigger value="organizations" className="gap-1.5"><Network className="h-3.5 w-3.5" />Organizations</TabsTrigger>
-            <TabsTrigger value="timeslots" className="gap-1.5"><Clock className="h-3.5 w-3.5" />Time slots</TabsTrigger>
-            <TabsTrigger value="users" className="gap-1.5"><UserCog className="h-3.5 w-3.5" />Users</TabsTrigger>
-            <TabsTrigger value="roles" className="gap-1.5"><ShieldCheck className="h-3.5 w-3.5" />Roles</TabsTrigger>
-            <TabsTrigger value="permissions" className="gap-1.5"><KeyRound className="h-3.5 w-3.5" />Permissions</TabsTrigger>
-          </TabsList>
+          <div className="-mx-4 sm:mx-0 overflow-x-auto no-scrollbar">
+            <TabsList className="inline-flex w-max sm:w-auto sm:grid sm:grid-cols-7 mx-4 sm:mx-0">
+              <TabsTrigger value="employees" className="gap-1.5 whitespace-nowrap"><Users className="h-3.5 w-3.5" />Employees</TabsTrigger>
+              <TabsTrigger value="departments" className="gap-1.5 whitespace-nowrap"><Building2 className="h-3.5 w-3.5" />Departments</TabsTrigger>
+              <TabsTrigger value="organizations" className="gap-1.5 whitespace-nowrap"><Network className="h-3.5 w-3.5" />Organizations</TabsTrigger>
+              <TabsTrigger value="timeslots" className="gap-1.5 whitespace-nowrap"><Clock className="h-3.5 w-3.5" />Time slots</TabsTrigger>
+              <TabsTrigger value="users" className="gap-1.5 whitespace-nowrap"><UserCog className="h-3.5 w-3.5" />Users</TabsTrigger>
+              <TabsTrigger value="roles" className="gap-1.5 whitespace-nowrap"><ShieldCheck className="h-3.5 w-3.5" />Roles</TabsTrigger>
+              <TabsTrigger value="permissions" className="gap-1.5 whitespace-nowrap"><KeyRound className="h-3.5 w-3.5" />Permissions</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="employees" className="mt-4"><EmployeesTab /></TabsContent>
           <TabsContent value="departments" className="mt-4"><DepartmentsTab /></TabsContent>
