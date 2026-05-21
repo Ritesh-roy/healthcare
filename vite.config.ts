@@ -7,23 +7,12 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  cloudflare: false,
   tanstackStart: {
     server: { entry: "server" },
-    prerender: { enabled: false },
     spa: { enabled: true },
   },
   vite: {
-    environments: {
-      server: {
-        build: {
-          rollupOptions: {
-            output: {
-              entryFileNames: "server.js",
-            },
-          },
-        },
-      },
-    },
     preview: {
       allowedHosts: [
         "localhost",
