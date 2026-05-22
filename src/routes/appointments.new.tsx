@@ -78,10 +78,23 @@ function NewAppointmentPage() {
     return { slots, conflict: currentConflict };
   }, [specialistId, date, duration, time]);
 
+  const isPastDate = (d: string) => {
+    const picked = new Date(d + "T00:00");
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return picked < now;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!patientId || !specialistId || !date || !time) {
       toast.error("Please complete patient, specialist, date and time.");
+      return;
+    }
+    if (isPastDate(date)) {
+      toast.error("Cannot book on a past date.", {
+        description: "Please select today or a future date.",
+      });
       return;
     }
     if (slotInfo.conflict) {
