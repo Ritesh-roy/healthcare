@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import {
   Area,
@@ -192,6 +193,14 @@ function Dashboard() {
                   <Link to="/referrals">
                     <Button variant="outline" className="gap-1.5 border-border/60">
                       Triage queue <ArrowUpRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link to="/healix">
+                    <Button
+                      variant="outline"
+                      className="gap-1.5 border-primary/40 text-primary hover:bg-primary/10"
+                    >
+                      <Sparkles className="h-4 w-4" /> Launch HEALIX AI
                     </Button>
                   </Link>
                 </div>
