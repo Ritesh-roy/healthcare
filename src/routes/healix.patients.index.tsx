@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { patientsQuery } from "@/lib/healix/queries";
 import { RiskPill } from "./healix.index";
 
-export const Route = createFileRoute("/healix/patients")({
+export const Route = createFileRoute("/healix/patients/")({
   head: () => ({
     meta: [
       { title: "Patients — HEALIX AI" },
