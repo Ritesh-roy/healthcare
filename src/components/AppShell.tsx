@@ -119,6 +119,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
+  // Activity: log navigation while signed in
+  useEffect(() => {
+    if (!ready || !user) return;
+    void logActivity("navigate", { route: location.pathname });
+  }, [ready, user, location.pathname]);
+
   const active: AuthUser = user ?? DEFAULT_USER;
   const initials = active.name.split(" ").map((n) => n[0]).slice(0, 2).join("");
   const { title, crumbs } = useTitleFromPath(location.pathname);
