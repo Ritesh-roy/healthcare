@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { DEFAULT_USER, getStoredUser, setStoredUser, type AuthUser } from "@/lib/auth";
 import { resolvePractitionerId } from "@/lib/master-store";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -87,12 +88,18 @@ function LoginPage() {
     }, 450);
   };
 
-  const onSignIn = (e: React.FormEvent) => {
+  const onSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setSigninTouched({ email: true, password: true });
     if (!signinValid) {
       toast.error("Please fix the highlighted fields.");
       return;
+    }
+    // Best-effort Supabase sign-in so admin server functions get a bearer token.
+    try {
+      await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    } catch {
+      // ignore — fall through to mock auth for demo accounts
     }
     const local = email.split("@")[0] || "Clinician";
     const inferredName = local
