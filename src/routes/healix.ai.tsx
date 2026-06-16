@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Send, Sparkles, Stethoscope, ClipboardList, Activity, Volume2, Loader2, StopCircle } from "lucide-react";
 import { HealixShell } from "@/components/healix/HealixShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { generateSpeech } from "@/lib/healix/tts";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/healix/ai")({
   head: () => ({
@@ -35,6 +36,27 @@ function AiPage() {
   const [pending, setPending] = useState(false);
   const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+  const sessionIdRef = useRef<string>("");
+  if (!sessionIdRef.current) {
+    if (typeof window !== "undefined") {
+      const key = "healix.ai.sessionId";
+      const existing = window.localStorage.getItem(key);
+      if (existing) sessionIdRef.current = existing;
+      else {
+        const id = (crypto.randomUUID?.() ?? `s_${Date.now()}_${Math.random().toString(36).slice(2)}`);
+        window.localStorage.setItem(key, id);
+        sessionIdRef.current = id;
+      }
+    } else {
+      sessionIdRef.current = "ssr";
+    }
+  }
+  const [authInfo, setAuthInfo] = useState<{ userId: string | null; userEmail: string | null }>({ userId: null, userEmail: null });
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setAuthInfo({ userId: data.user?.id ?? null, userEmail: data.user?.email ?? null });
+    });
+  }, []);
 
   const speak = async (idx: number, text: string) => {
     if (speakingIdx === idx && currentAudio) {
@@ -74,14 +96,19 @@ function AiPage() {
       const res = await fetch("/api/healix/ai", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ messages: [...messages, { role: "user", content }] }),
+        body: JSON.stringify({
+          messages: [...messages, { role: "user", content }],
+          sessionId: sessionIdRef.current,
+          userId: authInfo.userId,
+          userEmail: authInfo.userEmail,
+        }),
       });
       const data = await res.json();
       setMessages((m) => [...m, { role: "assistant", content: data.reply ?? "(no response)" }]);
     } catch {
       setMessages((m) => [
         ...m,
-        { role: "assistant", content: "I'm offline right now — connect Lovable AI to enable live clinical reasoning." },
+        { role: "assistant", content: "I'm offline right now. Please try again in a moment." },
       ]);
     } finally {
       setPending(false);
