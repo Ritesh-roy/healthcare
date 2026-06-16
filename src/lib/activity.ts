@@ -44,7 +44,7 @@ export async function logActivity(
       event_type,
       action: payload.action ?? null,
       route: payload.route ?? window.location.pathname,
-      metadata: payload.metadata ?? null,
+      metadata: (payload.metadata ?? null) as never,
       session_id: getActivitySessionId(),
       user_agent: window.navigator.userAgent,
     });
