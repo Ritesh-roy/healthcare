@@ -33,6 +33,7 @@ import { Route as HealixAiRouteImport } from './routes/healix.ai'
 import { Route as AppointmentsNewRouteImport } from './routes/appointments.new'
 import { Route as HealixPatientsIndexRouteImport } from './routes/healix.patients.index'
 import { Route as HealixPatientsIdRouteImport } from './routes/healix.patients.$id'
+import { Route as ApiHealixTtsRouteImport } from './routes/api/healix/tts'
 import { Route as ApiHealixAiRouteImport } from './routes/api/healix/ai'
 
 const SettingsRoute = SettingsRouteImport.update({
@@ -155,6 +156,11 @@ const HealixPatientsIdRoute = HealixPatientsIdRouteImport.update({
   path: '/patients/$id',
   getParentRoute: () => HealixRoute,
 } as any)
+const ApiHealixTtsRoute = ApiHealixTtsRouteImport.update({
+  id: '/api/healix/tts',
+  path: '/api/healix/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiHealixAiRoute = ApiHealixAiRouteImport.update({
   id: '/api/healix/ai',
   path: '/api/healix/ai',
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/healix/': typeof HealixIndexRoute
   '/referrals/': typeof ReferralsIndexRoute
   '/api/healix/ai': typeof ApiHealixAiRoute
+  '/api/healix/tts': typeof ApiHealixTtsRoute
   '/healix/patients/$id': typeof HealixPatientsIdRoute
   '/healix/patients/': typeof HealixPatientsIndexRoute
 }
@@ -211,6 +218,7 @@ export interface FileRoutesByTo {
   '/healix': typeof HealixIndexRoute
   '/referrals': typeof ReferralsIndexRoute
   '/api/healix/ai': typeof ApiHealixAiRoute
+  '/api/healix/tts': typeof ApiHealixTtsRoute
   '/healix/patients/$id': typeof HealixPatientsIdRoute
   '/healix/patients': typeof HealixPatientsIndexRoute
 }
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/healix/': typeof HealixIndexRoute
   '/referrals/': typeof ReferralsIndexRoute
   '/api/healix/ai': typeof ApiHealixAiRoute
+  '/api/healix/tts': typeof ApiHealixTtsRoute
   '/healix/patients/$id': typeof HealixPatientsIdRoute
   '/healix/patients/': typeof HealixPatientsIndexRoute
 }
@@ -268,6 +277,7 @@ export interface FileRouteTypes {
     | '/healix/'
     | '/referrals/'
     | '/api/healix/ai'
+    | '/api/healix/tts'
     | '/healix/patients/$id'
     | '/healix/patients/'
   fileRoutesByTo: FileRoutesByTo
@@ -294,6 +304,7 @@ export interface FileRouteTypes {
     | '/healix'
     | '/referrals'
     | '/api/healix/ai'
+    | '/api/healix/tts'
     | '/healix/patients/$id'
     | '/healix/patients'
   id:
@@ -321,6 +332,7 @@ export interface FileRouteTypes {
     | '/healix/'
     | '/referrals/'
     | '/api/healix/ai'
+    | '/api/healix/tts'
     | '/healix/patients/$id'
     | '/healix/patients/'
   fileRoutesById: FileRoutesById
@@ -341,6 +353,7 @@ export interface RootRouteChildren {
   ReferralsNewRoute: typeof ReferralsNewRoute
   ReferralsIndexRoute: typeof ReferralsIndexRoute
   ApiHealixAiRoute: typeof ApiHealixAiRoute
+  ApiHealixTtsRoute: typeof ApiHealixTtsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -513,6 +526,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HealixPatientsIdRouteImport
       parentRoute: typeof HealixRoute
     }
+    '/api/healix/tts': {
+      id: '/api/healix/tts'
+      path: '/api/healix/tts'
+      fullPath: '/api/healix/tts'
+      preLoaderRoute: typeof ApiHealixTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/healix/ai': {
       id: '/api/healix/ai'
       path: '/api/healix/ai'
@@ -578,17 +598,8 @@ const rootRouteChildren: RootRouteChildren = {
   ReferralsNewRoute: ReferralsNewRoute,
   ReferralsIndexRoute: ReferralsIndexRoute,
   ApiHealixAiRoute: ApiHealixAiRoute,
+  ApiHealixTtsRoute: ApiHealixTtsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
