@@ -47,7 +47,7 @@ function AdminConversationsPage() {
 
   if (error === "Forbidden" || error === "Unauthorized") {
     return (
-      <AppShell title="Admin">
+      <AppShell>
         <Card className="max-w-xl mx-auto mt-12">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
@@ -64,7 +64,7 @@ function AdminConversationsPage() {
   }
 
   return (
-    <AppShell title="AI Conversations">
+    <AppShell>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <div className="relative flex-1 max-w-md">
