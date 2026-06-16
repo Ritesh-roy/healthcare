@@ -24,6 +24,55 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const REGISTRY_KEY = "refera.auth.registry";
+
+type RegistryEntry = {
+  email: string;
+  password: string;
+  name: string;
+  role: AuthUser["role"];
+  organization: string;
+};
+
+const DEMO_ACCOUNTS: RegistryEntry[] = [
+  {
+    email: "adminleo@gmail.com",
+    password: "leo@admin",
+    name: "Admin · Refera",
+    role: "Admin",
+    organization: "Refera HQ",
+  },
+];
+
+function readRegistry(): RegistryEntry[] {
+  if (typeof window === "undefined") return DEMO_ACCOUNTS;
+  try {
+    const raw = window.localStorage.getItem(REGISTRY_KEY);
+    const list = raw ? (JSON.parse(raw) as RegistryEntry[]) : [];
+    const merged = [...list];
+    for (const d of DEMO_ACCOUNTS) {
+      if (!merged.some((e) => e.email.toLowerCase() === d.email.toLowerCase())) {
+        merged.push(d);
+      }
+    }
+    return merged;
+  } catch {
+    return DEMO_ACCOUNTS;
+  }
+}
+
+function writeRegistry(entry: RegistryEntry) {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = window.localStorage.getItem(REGISTRY_KEY);
+    const list = raw ? (JSON.parse(raw) as RegistryEntry[]) : [];
+    const filtered = list.filter((e) => e.email.toLowerCase() !== entry.email.toLowerCase());
+    filtered.push(entry);
+    window.localStorage.setItem(REGISTRY_KEY, JSON.stringify(filtered));
+  } catch {
+    // ignore
+  }
+}
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -95,27 +144,38 @@ function LoginPage() {
       toast.error("Please fix the highlighted fields.");
       return;
     }
+    const registry = readRegistry();
+    const match = registry.find(
+      (r) => r.email.toLowerCase() === email.trim().toLowerCase(),
+    );
+    if (!match) {
+      toast.error("No account found for this email.", {
+        description: "Please create an account first.",
+        action: { label: "Create account", onClick: () => setMode("signup") },
+      });
+      return;
+    }
+    if (match.password !== password) {
+      toast.error("Incorrect password.", {
+        description: "Please try again or reset your password.",
+      });
+      return;
+    }
     // Best-effort Supabase sign-in so admin server functions get a bearer token.
     try {
       await supabase.auth.signInWithPassword({ email: email.trim(), password });
     } catch {
       // ignore — fall through to mock auth for demo accounts
     }
-    const local = email.split("@")[0] || "Clinician";
-    const inferredName = local
-      .split(/[._-]+/)
-      .filter(Boolean)
-      .map((p) => p[0].toUpperCase() + p.slice(1))
-      .join(" ");
-    const isAdmin = /^admin(@|\+|\.)/i.test(email.trim());
-    const practitionerId = isAdmin ? undefined : resolvePractitionerId(email);
+    const isAdmin = match.role === "Admin";
+    const practitionerId = isAdmin ? undefined : resolvePractitionerId(match.email);
     finish(
       {
         ...DEFAULT_USER,
-        name: isAdmin ? "Admin · Refera" : `Dr. ${inferredName}`,
-        email,
-        role: isAdmin ? "Admin" : DEFAULT_USER.role,
-        organization: isAdmin ? "Refera HQ" : DEFAULT_USER.organization,
+        name: match.name,
+        email: match.email,
+        role: match.role,
+        organization: match.organization,
         practitionerId,
       },
       "Signed in",
@@ -129,6 +189,30 @@ function LoginPage() {
       toast.error("Please complete every required field.");
       return;
     }
+    const registry = readRegistry();
+    if (registry.some((r) => r.email.toLowerCase() === signupEmail.trim().toLowerCase())) {
+      toast.error("An account with this email already exists.", {
+        description: "Please sign in instead.",
+        action: { label: "Sign in", onClick: () => setMode("signin") },
+      });
+      return;
+    }
+    writeRegistry({
+      email: signupEmail.trim(),
+      password: signupPassword,
+      name,
+      role,
+      organization: org,
+    });
+    toast.success("Account created", {
+      description: "Please sign in with your new credentials.",
+    });
+    setEmail(signupEmail.trim());
+    setPassword("");
+    setMode("signin");
+    setLoading(false);
+    return;
+    // eslint-disable-next-line no-unreachable
     finish(
       {
         name,
