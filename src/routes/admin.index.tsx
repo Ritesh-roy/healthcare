@@ -23,7 +23,7 @@ import {
 } from "@/lib/mock-data";
 import { getStoredAppointments, subscribeAppointments } from "@/lib/appointments-store";
 
-export const Route = createFileRoute("/admin")({
+export const Route = createFileRoute("/admin/")({
   head: () => ({ meta: [{ title: "Admin — Refera" }] }),
   component: AdminPage,
 });
