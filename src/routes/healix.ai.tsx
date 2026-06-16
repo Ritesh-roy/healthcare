@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Send, Sparkles, Stethoscope, ClipboardList, Activity } from "lucide-react";
+import { Send, Sparkles, Stethoscope, ClipboardList, Activity, Volume2, Loader2, StopCircle } from "lucide-react";
 import { HealixShell } from "@/components/healix/HealixShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { generateSpeech } from "@/lib/healix/tts";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/healix/ai")({
   head: () => ({
@@ -31,6 +33,36 @@ function AiPage() {
   ]);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
+  const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
+
+  const speak = async (idx: number, text: string) => {
+    if (speakingIdx === idx && currentAudio) {
+      currentAudio.pause();
+      setCurrentAudio(null);
+      setSpeakingIdx(null);
+      return;
+    }
+    if (currentAudio) {
+      currentAudio.pause();
+    }
+    setSpeakingIdx(idx);
+    try {
+      const blob = await generateSpeech(text);
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.addEventListener("ended", () => {
+        URL.revokeObjectURL(url);
+        setSpeakingIdx((s) => (s === idx ? null : s));
+        setCurrentAudio((a) => (a === audio ? null : a));
+      });
+      setCurrentAudio(audio);
+      await audio.play();
+    } catch (err) {
+      toast.error((err as Error).message || "Couldn't generate speech");
+      setSpeakingIdx(null);
+    }
+  };
 
   const send = async (text?: string) => {
     const content = (text ?? input).trim();
@@ -67,16 +99,39 @@ function AiPage() {
           </CardHeader>
           <CardContent className="flex-1 overflow-auto space-y-3">
             {messages.map((m, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "rounded-2xl px-4 py-3 max-w-[85%] text-sm leading-relaxed whitespace-pre-wrap",
-                  m.role === "user"
-                    ? "ml-auto bg-primary text-primary-foreground"
-                    : "bg-muted text-foreground",
+              <div key={i} className={cn("max-w-[85%]", m.role === "user" ? "ml-auto" : "")}> 
+                <div
+                  className={cn(
+                    "rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap",
+                    m.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-foreground",
+                  )}
+                >
+                  {m.content}
+                </div>
+                {m.role === "assistant" && (
+                  <button
+                    onClick={() => speak(i, m.content)}
+                    className="mt-1 inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {speakingIdx === i ? (
+                      currentAudio ? (
+                        <>
+                          <StopCircle className="h-3.5 w-3.5" /> Stop
+                        </>
+                      ) : (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating…
+                        </>
+                      )
+                    ) : (
+                      <>
+                        <Volume2 className="h-3.5 w-3.5" /> Listen
+                      </>
+                    )}
+                  </button>
                 )}
-              >
-                {m.content}
               </div>
             ))}
             {pending && (
