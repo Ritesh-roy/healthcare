@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { listConversations, type AdminConversation } from "@/lib/admin.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { setStoredUser } from "@/lib/auth";
 
 export const Route = createFileRoute("/admin/conversations")({
   head: () => ({ meta: [{ title: "AI Conversations — Admin" }] }),
@@ -22,6 +24,11 @@ function AdminConversationsPage() {
     setLoading(true);
     setError(null);
     try {
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session) {
+        setError("NoSession");
+        return;
+      }
       const data = await listConversations();
       setRows(data);
     } catch (e) {
@@ -45,18 +52,30 @@ function AdminConversationsPage() {
     );
   }, [rows, q]);
 
-  if (error === "Forbidden" || error === "Unauthorized") {
+  if (error === "NoSession" || error?.includes("Unauthorized") || error === "Forbidden") {
     return (
       <AppShell>
         <Card className="max-w-xl mx-auto mt-12">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
-              <ShieldAlert className="h-5 w-5" /> Access denied
+              <ShieldAlert className="h-5 w-5" /> Admin sign-in required
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
-            <p>You must be signed in with an admin email to view this page.</p>
-            <Link to="/login" className="text-primary underline">Sign in</Link>
+            <p>
+              Please sign in again with your admin email and password so we can
+              load the AI conversation logs.
+            </p>
+            <Button
+              size="sm"
+              onClick={async () => {
+                await supabase.auth.signOut().catch(() => {});
+                setStoredUser(null);
+                window.location.href = "/login";
+              }}
+            >
+              Sign in again
+            </Button>
           </CardContent>
         </Card>
       </AppShell>
