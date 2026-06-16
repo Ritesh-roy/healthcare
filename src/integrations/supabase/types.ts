@@ -44,6 +44,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_activity: {
+        Row: {
+          action: string | null
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          route: string | null
+          session_id: string | null
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+          user_name: string | null
+          user_role: string | null
+        }
+        Insert: {
+          action?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          route?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+          user_name?: string | null
+          user_role?: string | null
+        }
+        Update: {
+          action?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          route?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+          user_name?: string | null
+          user_role?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

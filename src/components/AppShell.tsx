@@ -43,6 +43,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth, DEFAULT_USER, setStoredUser, type AuthUser } from "@/lib/auth";
 import { toast } from "sonner";
+import { logActivity, resetActivitySession } from "@/lib/activity";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, hint: "Overview" },
@@ -53,6 +54,7 @@ const nav = [
   { to: "/consultations", label: "Consultations", icon: FileText, hint: "Outcomes" },
   { to: "/admin", label: "Admin", icon: ShieldAlert, hint: "All data", adminOnly: true },
   { to: "/admin/conversations", label: "AI Conversations", icon: FileText, hint: "HEALIX logs", adminOnly: true },
+  { to: "/admin/activity", label: "User Activity", icon: Activity, hint: "Login & actions", adminOnly: true },
   { to: "/masters", label: "Masters", icon: Database, hint: "Users, Roles, Depts", adminOnly: true },
 ] as const;
 
@@ -117,6 +119,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
+  // Activity: log navigation while signed in
+  useEffect(() => {
+    if (!ready || !user) return;
+    void logActivity("navigate", { route: location.pathname });
+  }, [ready, user, location.pathname]);
+
   const active: AuthUser = user ?? DEFAULT_USER;
   const initials = active.name.split(" ").map((n) => n[0]).slice(0, 2).join("");
   const { title, crumbs } = useTitleFromPath(location.pathname);
@@ -129,7 +137,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   const onLogout = () => {
+    void logActivity("logout", { action: "Signed out" });
     setStoredUser(null);
+    resetActivitySession();
     toast.success("Signed out");
     navigate({ to: "/login" });
   };

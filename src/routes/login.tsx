@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { DEFAULT_USER, getStoredUser, setStoredUser, type AuthUser } from "@/lib/auth";
 import { resolvePractitionerId } from "@/lib/master-store";
 import { supabase } from "@/integrations/supabase/client";
+import { logActivity, resetActivitySession } from "@/lib/activity";
 import { cn } from "@/lib/utils";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -169,6 +170,12 @@ function LoginPage() {
     }
     const isAdmin = match.role === "Admin";
     const practitionerId = isAdmin ? undefined : resolvePractitionerId(match.email);
+    resetActivitySession();
+    void logActivity(
+      "login",
+      { action: "Signed in", metadata: { method: "password" } },
+      { name: match.name, email: match.email, role: match.role },
+    );
     finish(
       {
         ...DEFAULT_USER,
