@@ -31,6 +31,7 @@ import { Route as HealixAppointmentsRouteImport } from './routes/healix.appointm
 import { Route as HealixAnalyticsRouteImport } from './routes/healix.analytics'
 import { Route as HealixAiRouteImport } from './routes/healix.ai'
 import { Route as AppointmentsNewRouteImport } from './routes/appointments.new'
+import { Route as AdminConversationsRouteImport } from './routes/admin.conversations'
 import { Route as HealixPatientsIndexRouteImport } from './routes/healix.patients.index'
 import { Route as HealixPatientsIdRouteImport } from './routes/healix.patients.$id'
 import { Route as ApiHealixTtsRouteImport } from './routes/api/healix/tts'
@@ -146,6 +147,11 @@ const AppointmentsNewRoute = AppointmentsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AppointmentsRoute,
 } as any)
+const AdminConversationsRoute = AdminConversationsRouteImport.update({
+  id: '/conversations',
+  path: '/conversations',
+  getParentRoute: () => AdminRoute,
+} as any)
 const HealixPatientsIndexRoute = HealixPatientsIndexRouteImport.update({
   id: '/patients/',
   path: '/patients/',
@@ -169,7 +175,7 @@ const ApiHealixAiRoute = ApiHealixAiRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/appointments': typeof AppointmentsRouteWithChildren
   '/consultations': typeof ConsultationsRoute
   '/healix': typeof HealixRouteWithChildren
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/masters': typeof MastersRoute
   '/patients': typeof PatientsRoute
   '/settings': typeof SettingsRoute
+  '/admin/conversations': typeof AdminConversationsRoute
   '/appointments/new': typeof AppointmentsNewRoute
   '/healix/ai': typeof HealixAiRoute
   '/healix/analytics': typeof HealixAnalyticsRoute
@@ -197,7 +204,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/appointments': typeof AppointmentsRouteWithChildren
   '/consultations': typeof ConsultationsRoute
   '/help': typeof HelpRoute
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/masters': typeof MastersRoute
   '/patients': typeof PatientsRoute
   '/settings': typeof SettingsRoute
+  '/admin/conversations': typeof AdminConversationsRoute
   '/appointments/new': typeof AppointmentsNewRoute
   '/healix/ai': typeof HealixAiRoute
   '/healix/analytics': typeof HealixAnalyticsRoute
@@ -225,7 +233,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/appointments': typeof AppointmentsRouteWithChildren
   '/consultations': typeof ConsultationsRoute
   '/healix': typeof HealixRouteWithChildren
@@ -235,6 +243,7 @@ export interface FileRoutesById {
   '/masters': typeof MastersRoute
   '/patients': typeof PatientsRoute
   '/settings': typeof SettingsRoute
+  '/admin/conversations': typeof AdminConversationsRoute
   '/appointments/new': typeof AppointmentsNewRoute
   '/healix/ai': typeof HealixAiRoute
   '/healix/analytics': typeof HealixAnalyticsRoute
@@ -265,6 +274,7 @@ export interface FileRouteTypes {
     | '/masters'
     | '/patients'
     | '/settings'
+    | '/admin/conversations'
     | '/appointments/new'
     | '/healix/ai'
     | '/healix/analytics'
@@ -292,6 +302,7 @@ export interface FileRouteTypes {
     | '/masters'
     | '/patients'
     | '/settings'
+    | '/admin/conversations'
     | '/appointments/new'
     | '/healix/ai'
     | '/healix/analytics'
@@ -320,6 +331,7 @@ export interface FileRouteTypes {
     | '/masters'
     | '/patients'
     | '/settings'
+    | '/admin/conversations'
     | '/appointments/new'
     | '/healix/ai'
     | '/healix/analytics'
@@ -339,7 +351,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AppointmentsRoute: typeof AppointmentsRouteWithChildren
   ConsultationsRoute: typeof ConsultationsRoute
   HealixRoute: typeof HealixRouteWithChildren
@@ -512,6 +524,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppointmentsNewRouteImport
       parentRoute: typeof AppointmentsRoute
     }
+    '/admin/conversations': {
+      id: '/admin/conversations'
+      path: '/conversations'
+      fullPath: '/admin/conversations'
+      preLoaderRoute: typeof AdminConversationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/healix/patients/': {
       id: '/healix/patients/'
       path: '/patients'
@@ -542,6 +561,16 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AdminRouteChildren {
+  AdminConversationsRoute: typeof AdminConversationsRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminConversationsRoute: AdminConversationsRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AppointmentsRouteChildren {
   AppointmentsNewRoute: typeof AppointmentsNewRoute
@@ -584,7 +613,7 @@ const HealixRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   AppointmentsRoute: AppointmentsRouteWithChildren,
   ConsultationsRoute: ConsultationsRoute,
   HealixRoute: HealixRouteWithChildren,
