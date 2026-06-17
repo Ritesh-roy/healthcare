@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Search, UserPlus } from "lucide-react";
 import { HealixShell } from "@/components/healix/HealixShell";
@@ -9,6 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { patientsQuery } from "@/lib/healix/queries";
 import { RiskPill } from "./healix.index";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import type { PatientSummary } from "@/lib/healix/fhir/types";
 
 export const Route = createFileRoute("/healix/patients/")({
   head: () => ({
@@ -23,11 +28,41 @@ export const Route = createFileRoute("/healix/patients/")({
 
 function PatientsPage() {
   const { data: patients } = useSuspenseQuery(patientsQuery());
+  const { data: dbPatients = [] } = useQuery({
+    queryKey: ["patients", "supabase"],
+    queryFn: async (): Promise<PatientSummary[]> => {
+      const { data, error } = await supabase
+        .from("patients")
+        .select("id,name,mrn,dob,sex,phone,email,address,problems")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []).map((p) => {
+        const age = p.dob ? Math.max(0, Math.floor((Date.now() - new Date(p.dob).getTime()) / (365.25 * 86400000))) : 0;
+        return {
+          id: p.id,
+          fullName: p.name,
+          age,
+          gender: (p.sex ?? "unknown") as PatientSummary["gender"],
+          mrn: p.mrn ?? `MRN-${p.id.slice(0, 6).toUpperCase()}`,
+          phone: p.phone ?? "—",
+          email: p.email ?? "",
+          city: p.address ?? undefined,
+          bloodType: undefined,
+          codeStatus: "Full Code",
+          lastVisit: undefined,
+          riskScore: 0,
+          activeConditions: (p.problems ?? []).length,
+          activeMedications: 0,
+        } satisfies PatientSummary;
+      });
+    },
+  });
+  const allPatients = useMemo(() => [...dbPatients, ...patients], [dbPatients, patients]);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"all" | "high" | "follow">("all");
 
   const list = useMemo(() => {
-    let l = patients;
+    let l = allPatients;
     if (q.trim()) {
       const s = q.toLowerCase();
       l = l.filter((p) => (p.fullName + " " + p.mrn + " " + (p.city ?? "")).toLowerCase().includes(s));
@@ -35,16 +70,14 @@ function PatientsPage() {
     if (filter === "high") l = l.filter((p) => p.riskScore >= 70);
     if (filter === "follow") l = l.filter((p) => p.activeConditions > 0);
     return l;
-  }, [patients, q, filter]);
+  }, [allPatients, q, filter]);
 
   return (
     <HealixShell
       title="Patients"
-      subtitle={`${list.length} of ${patients.length} patients`}
+      subtitle={`${list.length} of ${allPatients.length} patients`}
       actions={
-        <Button className="bg-gradient-primary text-primary-foreground shadow-glow gap-1.5">
-          <UserPlus className="h-4 w-4" /> <span className="hidden sm:inline">New patient</span>
-        </Button>
+        <NewPatientDialog />
       }
     >
       <Card className="p-3 sm:p-4">
