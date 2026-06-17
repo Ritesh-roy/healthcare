@@ -19,6 +19,7 @@ import { Route as HealixRouteImport } from './routes/healix'
 import { Route as ConsultationsRouteImport } from './routes/consultations'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ReferralsIndexRouteImport } from './routes/referrals.index'
 import { Route as HealixIndexRouteImport } from './routes/healix.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ReferralsNewRouteImport } from './routes/referrals.new'
@@ -84,6 +85,11 @@ const AppointmentsRoute = AppointmentsRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReferralsIndexRoute = ReferralsIndexRouteImport.update({
+  id: '/referrals/',
+  path: '/referrals/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HealixIndexRoute = HealixIndexRouteImport.update({
@@ -189,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/referrals/new': typeof ReferralsNewRoute
   '/admin/': typeof AdminIndexRoute
   '/healix/': typeof HealixIndexRoute
+  '/referrals/': typeof ReferralsIndexRoute
   '/api/healix/ai': typeof ApiHealixAiRoute
   '/api/healix/tts': typeof ApiHealixTtsRoute
   '/api/public/bootstrap': typeof ApiPublicBootstrapRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/referrals/new': typeof ReferralsNewRoute
   '/admin': typeof AdminIndexRoute
   '/healix': typeof HealixIndexRoute
+  '/referrals': typeof ReferralsIndexRoute
   '/api/healix/ai': typeof ApiHealixAiRoute
   '/api/healix/tts': typeof ApiHealixTtsRoute
   '/api/public/bootstrap': typeof ApiPublicBootstrapRoute
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   '/referrals/new': typeof ReferralsNewRoute
   '/admin/': typeof AdminIndexRoute
   '/healix/': typeof HealixIndexRoute
+  '/referrals/': typeof ReferralsIndexRoute
   '/api/healix/ai': typeof ApiHealixAiRoute
   '/api/healix/tts': typeof ApiHealixTtsRoute
   '/api/public/bootstrap': typeof ApiPublicBootstrapRoute
@@ -275,6 +284,7 @@ export interface FileRouteTypes {
     | '/referrals/new'
     | '/admin/'
     | '/healix/'
+    | '/referrals/'
     | '/api/healix/ai'
     | '/api/healix/tts'
     | '/api/public/bootstrap'
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/referrals/new'
     | '/admin'
     | '/healix'
+    | '/referrals'
     | '/api/healix/ai'
     | '/api/healix/tts'
     | '/api/public/bootstrap'
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/referrals/new'
     | '/admin/'
     | '/healix/'
+    | '/referrals/'
     | '/api/healix/ai'
     | '/api/healix/tts'
     | '/api/public/bootstrap'
@@ -351,6 +363,7 @@ export interface RootRouteChildren {
   ReferralsIdRoute: typeof ReferralsIdRoute
   ReferralsNewRoute: typeof ReferralsNewRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  ReferralsIndexRoute: typeof ReferralsIndexRoute
   ApiHealixAiRoute: typeof ApiHealixAiRoute
   ApiHealixTtsRoute: typeof ApiHealixTtsRoute
   ApiPublicBootstrapRoute: typeof ApiPublicBootstrapRoute
@@ -426,6 +439,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/referrals/': {
+      id: '/referrals/'
+      path: '/referrals'
+      fullPath: '/referrals/'
+      preLoaderRoute: typeof ReferralsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/healix/': {
@@ -596,6 +616,7 @@ const rootRouteChildren: RootRouteChildren = {
   ReferralsIdRoute: ReferralsIdRoute,
   ReferralsNewRoute: ReferralsNewRoute,
   AdminIndexRoute: AdminIndexRoute,
+  ReferralsIndexRoute: ReferralsIndexRoute,
   ApiHealixAiRoute: ApiHealixAiRoute,
   ApiHealixTtsRoute: ApiHealixTtsRoute,
   ApiPublicBootstrapRoute: ApiPublicBootstrapRoute,
