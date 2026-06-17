@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
   ArrowUpRight,
@@ -30,14 +31,19 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import {
-  getPatient,
-  getPractitioner,
+  fetchAppointments,
+  fetchDoctors,
+  fetchPatients,
+  fetchReferrals,
+  formatMrn,
+  fullNameInitials,
+  priorityMeta,
+  referralCode,
   statusMeta,
-  urgencyMeta,
-} from "@/lib/mock-data";
+} from "@/lib/app-data";
 import { useAuth, DEFAULT_USER } from "@/lib/auth";
-import { scopedAppointments, scopedPatients, scopedReferrals } from "@/lib/scoped";
 import { cn } from "@/lib/utils";
+import { useRealtimeTables } from "@/lib/realtime";
 
 export const Route = createFileRoute("/")({
   head: () => ({
