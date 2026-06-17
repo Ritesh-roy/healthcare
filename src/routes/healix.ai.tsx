@@ -103,12 +103,27 @@ function AiPage() {
           userEmail: authInfo.userEmail,
         }),
       });
-      const data = await res.json();
+      const raw = await res.text();
+      console.log("[healix.ai] status", res.status, "body:", raw.slice(0, 500));
+      let data: { reply?: string; error?: string } = {};
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        const looksLikeHtml = raw.trim().startsWith("<");
+        throw new Error(
+          looksLikeHtml
+            ? `Server route /api/healix/ai not running (got HTML). Deploy to Vercel and set GEMINI_API_KEY.`
+            : `Non-JSON response: ${raw.slice(0, 200)}`,
+        );
+      }
+      if (!res.ok) throw new Error(data.error || data.reply || `HTTP ${res.status}`);
       setMessages((m) => [...m, { role: "assistant", content: data.reply ?? "(no response)" }]);
-    } catch {
+    } catch (err) {
+      const message = (err as Error).message || "Unknown error";
+      console.error("[healix.ai] request failed:", err);
       setMessages((m) => [
         ...m,
-        { role: "assistant", content: "I'm offline right now. Please try again in a moment." },
+        { role: "assistant", content: `⚠️ AI request failed: ${message}` },
       ]);
     } finally {
       setPending(false);
