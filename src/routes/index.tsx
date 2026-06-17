@@ -465,9 +465,9 @@ function Dashboard() {
             <CardContent className="p-0">
               <div className="divide-y divide-border/60">
                 {upcoming.map((a) => {
-                  const p = getPatient(a.patientId)!;
-                  const sp = getPractitioner(a.specialistId)!;
-                  const d = new Date(a.startsAt);
+                  const p = patients.find((x) => x.id === a.patient_id);
+                  const sp = doctors.find((x) => x.id === a.doctor_id);
+                  const d = new Date(a.starts_at);
                   return (
                     <div key={a.id} className="flex items-center gap-3 px-5 py-3.5">
                       <div className="w-12 rounded-md border border-border/60 bg-background/40 py-1 text-center">
@@ -479,9 +479,9 @@ function Dashboard() {
                         </div>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium">{p.name}</div>
+                        <div className="truncate text-sm font-medium">{p?.name ?? "Unknown patient"}</div>
                         <div className="truncate text-xs text-muted-foreground">
-                          {sp.specialty} · {sp.name}
+                          {sp?.specialty ?? "Doctor"} · {sp?.name ?? "Unassigned"}
                         </div>
                       </div>
                       <div className="font-mono text-xs tabular-nums text-muted-foreground">
@@ -555,9 +555,7 @@ function Legend({ dot, label }: { dot: string; label: string }) {
   );
 }
 
-function MiniCalendar() {
-  const { user } = useAuth();
-  const appointments = scopedAppointments(user);
+function MiniCalendar({ appointments, patients, doctors }: { appointments: Awaited<ReturnType<typeof fetchAppointments>>; patients: Awaited<ReturnType<typeof fetchPatients>>; doctors: Awaited<ReturnType<typeof fetchDoctors>> }) {
   const [cursor, setCursor] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -576,7 +574,7 @@ function MiniCalendar() {
 
   const apptDays = new Set(
     appointments
-      .map((a) => new Date(a.startsAt))
+      .map((a) => new Date(a.starts_at))
       .filter(
         (d) =>
           d.getFullYear() === cursor.getFullYear() && d.getMonth() === cursor.getMonth(),
@@ -593,7 +591,7 @@ function MiniCalendar() {
     n === null
       ? []
       : appointments.filter((a) => {
-          const d = new Date(a.startsAt);
+          const d = new Date(a.starts_at);
           return (
             d.getFullYear() === cursor.getFullYear() &&
             d.getMonth() === cursor.getMonth() &&
@@ -684,8 +682,8 @@ function MiniCalendar() {
               selectedAppts
                 .sort((a, b) => +new Date(a.startsAt) - +new Date(b.startsAt))
                 .map((a) => {
-                  const p = getPatient(a.patientId);
-                  const s = getPractitioner(a.specialistId);
+                  const p = patients.find((x) => x.id === a.patient_id);
+                  const s = doctors.find((x) => x.id === a.doctor_id);
                   return (
                     <Link
                       key={a.id}
