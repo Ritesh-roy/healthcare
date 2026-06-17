@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard,
   Inbox,
@@ -43,7 +44,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth, DEFAULT_USER, setStoredUser, type AuthUser } from "@/lib/auth";
 import { toast } from "sonner";
-import { logActivity, resetActivitySession } from "@/lib/activity";
+import { finishUserSession, logActivity, resetActivitySession } from "@/lib/activity";
+import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeTables } from "@/lib/realtime";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, hint: "Overview" },
@@ -55,12 +58,6 @@ const nav = [
   { to: "/admin", label: "Admin", icon: ShieldAlert, hint: "All data", adminOnly: true },
   { to: "/masters", label: "Masters", icon: Database, hint: "Users, Roles, Depts", adminOnly: true },
 ] as const;
-
-const NOTIFICATIONS = [
-  { id: 1, icon: AlertTriangle, tone: "warn" as const, title: "Urgent referral awaiting triage", body: "Amelia Hartwell · Endocrinology · HbA1c 9.2%", time: "8m" },
-  { id: 2, icon: CheckCheck, tone: "success" as const, title: "Consult completed", body: "Jonas Albrecht · Cardiology pre-op cleared", time: "2h" },
-  { id: 3, icon: CalendarDays, tone: "info" as const, title: "Appointment scheduled", body: "Marcus Doyle · St. Aldwyn · 14 May 09:15", time: "1d" },
-];
 
 function useTitleFromPath(pathname: string) {
   return useMemo(() => {
@@ -126,16 +123,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const active: AuthUser = user ?? DEFAULT_USER;
   const initials = active.name.split(" ").map((n) => n[0]).slice(0, 2).join("");
   const { title, crumbs } = useTitleFromPath(location.pathname);
+  useRealtimeTables(["user_activity", "user_sessions"], [["activity-feed"]]);
+  const { data: notifications = [] } = useQuery({
+    queryKey: ["activity-feed"],
+    enabled: active.role === "Admin",
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_activity")
+        .select("id,user_name,user_email,user_role,event_type,action,created_at")
+        .in("event_type", ["login", "logout"])
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!search.trim()) return;
-    navigate({ to: "/referrals" });
-    toast.message(`Searching "${search}"`, { description: "Filter applied to referrals." });
+    navigate({ to: "/admin" });
+    toast.message(`Searching "${search}"`, { description: "Opened admin search across live data." });
   };
 
-  const onLogout = () => {
-    void logActivity("logout", { action: "Signed out" });
+  const onLogout = async () => {
+    await logActivity("logout", { action: "Signed out" });
+    await finishUserSession();
+    await supabase.auth.signOut();
     setStoredUser(null);
     resetActivitySession();
     toast.success("Signed out");
@@ -222,30 +236,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </button>
                 </div>
                 <div className="divide-y divide-border max-h-80 overflow-auto">
-                  {NOTIFICATIONS.map((n) => {
-                    const Icon = n.icon;
-                    const tone =
-                      n.tone === "warn"
-                        ? "text-[oklch(var(--status-warn))] bg-[var(--status-warn-bg)]"
-                        : n.tone === "success"
-                          ? "text-[oklch(var(--status-success))] bg-[var(--status-success-bg)]"
-                          : "text-[oklch(var(--status-info))] bg-[var(--status-info-bg)]";
+                  {notifications.map((n) => {
+                    const Icon = n.event_type === "logout" ? LogOut : Activity;
+                    const tone = n.event_type === "logout"
+                      ? "text-[oklch(var(--status-warn))] bg-[var(--status-warn-bg)]"
+                      : "text-[oklch(var(--status-success))] bg-[var(--status-success-bg)]";
+                    const at = new Date(n.created_at);
                     return (
                       <div key={n.id} className="flex items-start gap-3 px-4 py-3 hover:bg-accent/40 transition-colors">
                         <div className={cn("h-7 w-7 rounded-md grid place-items-center shrink-0", tone)}>
                           <Icon className="h-3.5 w-3.5" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="text-sm font-medium leading-snug">{n.title}</div>
-                          <div className="text-xs text-muted-foreground truncate">{n.body}</div>
+                          <div className="text-sm font-medium leading-snug">{n.user_name ?? n.user_email ?? "Clinician"} {n.event_type === "logout" ? "signed out" : "signed in"}</div>
+                          <div className="text-xs text-muted-foreground truncate">{n.user_role ?? "User"} · {n.action ?? n.event_type}</div>
                         </div>
-                        <div className="text-[10px] text-muted-foreground tabular-nums shrink-0">{n.time}</div>
+                        <div className="text-[10px] text-muted-foreground tabular-nums shrink-0">{at.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}</div>
                       </div>
                     );
                   })}
+                  {notifications.length === 0 && (
+                    <div className="px-4 py-6 text-sm text-muted-foreground text-center">No login activity yet.</div>
+                  )}
                 </div>
                 <div className="px-4 py-2 border-t border-border">
-                  <Link to="/referrals" className="text-xs text-primary hover:underline">
+                  <Link to="/admin" className="text-xs text-primary hover:underline">
                     View all activity →
                   </Link>
                 </div>

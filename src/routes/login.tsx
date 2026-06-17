@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { DEFAULT_USER, getStoredUser, setStoredUser, type AuthUser } from "@/lib/auth";
 import { resolvePractitionerId } from "@/lib/master-store";
 import { supabase } from "@/integrations/supabase/client";
-import { logActivity, resetActivitySession } from "@/lib/activity";
+import { logActivity, resetActivitySession, startUserSession } from "@/lib/activity";
 import { cn } from "@/lib/utils";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -138,6 +138,29 @@ function LoginPage() {
     }, 450);
   };
 
+  const finishCloudSignIn = async () => {
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth.user) throw new Error("Sign-in did not return a user.");
+
+    const [{ data: roles }, { data: doctor }] = await Promise.all([
+      supabase.from("user_roles").select("role").eq("user_id", auth.user.id),
+      supabase.from("doctors").select("id,name,email,specialty,status").eq("user_id", auth.user.id).maybeSingle(),
+    ]);
+    const isAdmin = roles?.some((r) => r.role === "admin") ?? false;
+    const appUser: AuthUser = {
+      ...DEFAULT_USER,
+      name: doctor?.name ?? auth.user.user_metadata?.name ?? auth.user.email ?? "Clinician",
+      email: auth.user.email ?? email.trim(),
+      role: isAdmin ? "Admin" : "Specialist",
+      organization: doctor?.specialty ? `${doctor.specialty} clinic` : isAdmin ? "Refera HQ" : "Clinical network",
+      practitionerId: doctor?.id,
+    };
+    resetActivitySession();
+    await startUserSession(appUser.email);
+    await logActivity("login", { action: "Signed in", metadata: { method: "password" } }, appUser);
+    finish(appUser, "Signed in");
+  };
+
   const onSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setSigninTouched({ email: true, password: true });
@@ -145,10 +168,16 @@ function LoginPage() {
       toast.error("Please fix the highlighted fields.");
       return;
     }
+    setLoading(true);
+    const { error: cloudError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (!cloudError) {
+      await finishCloudSignIn();
+      return;
+    }
+
     const registry = readRegistry();
-    const match = registry.find(
-      (r) => r.email.toLowerCase() === email.trim().toLowerCase(),
-    );
+    const match = registry.find((r) => r.email.toLowerCase() === email.trim().toLowerCase());
+    setLoading(false);
     if (!match) {
       toast.error("No account found for this email.", {
         description: "Please create an account first.",

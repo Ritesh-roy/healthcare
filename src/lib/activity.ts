@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getStoredUser } from "@/lib/auth";
 
 const SESSION_KEY = "refera.activity.session";
+const DB_SESSION_KEY = "refera.activity.dbSession";
 
 export function getActivitySessionId(): string {
   if (typeof window === "undefined") return "ssr";
@@ -21,6 +22,7 @@ export function resetActivitySession() {
   if (typeof window === "undefined") return;
   try {
     window.sessionStorage.removeItem(SESSION_KEY);
+    window.sessionStorage.removeItem(DB_SESSION_KEY);
   } catch {
     /* ignore */
   }
@@ -36,8 +38,10 @@ export async function logActivity(
   if (typeof window === "undefined") return;
   const u = userOverride ?? getStoredUser();
   try {
+    const { data: auth } = await supabase.auth.getUser();
+    const authUserId = auth.user?.id ?? null;
     await supabase.from("user_activity").insert({
-      user_id: null,
+      user_id: authUserId,
       user_email: u?.email ?? null,
       user_name: u?.name ?? null,
       user_role: u?.role ?? null,
@@ -50,5 +54,40 @@ export async function logActivity(
     });
   } catch {
     /* swallow — logging must never break UX */
+  }
+}
+
+export async function startUserSession(userEmail: string | null) {
+  if (typeof window === "undefined") return;
+  try {
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) return;
+    const { data: row, error } = await supabase
+      .from("user_sessions")
+      .insert({
+        user_id: data.user.id,
+        user_email: userEmail ?? data.user.email ?? null,
+        user_agent: window.navigator.userAgent,
+      })
+      .select("id")
+      .single();
+    if (!error && row?.id) window.sessionStorage.setItem(DB_SESSION_KEY, row.id);
+  } catch {
+    /* ignore */
+  }
+}
+
+export async function finishUserSession() {
+  if (typeof window === "undefined") return;
+  try {
+    const sessionId = window.sessionStorage.getItem(DB_SESSION_KEY);
+    if (!sessionId) return;
+    await supabase
+      .from("user_sessions")
+      .update({ logout_at: new Date().toISOString(), last_active_at: new Date().toISOString() })
+      .eq("id", sessionId);
+    window.sessionStorage.removeItem(DB_SESSION_KEY);
+  } catch {
+    /* ignore */
   }
 }
