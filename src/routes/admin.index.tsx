@@ -1,14 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, Clock, Inbox, Search, ShieldAlert, Stethoscope, Users } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { CalendarDays, Inbox, LogOut, Search, ShieldAlert, Stethoscope, Users } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/StatusBadge";
 import { fetchActivity, fetchAppointments, fetchDoctors, fetchPatients, fetchReferrals, fetchUserSessions, formatMrn, priorityMeta, referralCode, statusMeta } from "@/lib/app-data";
 import { useRealtimeTables } from "@/lib/realtime";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/")({
   head: () => ({ meta: [{ title: "Admin — Refera" }] }),
@@ -16,6 +19,7 @@ export const Route = createFileRoute("/admin/")({
 });
 
 function AdminPage() {
+  const qc = useQueryClient();
   const [q, setQ] = useState("");
   const term = q.trim().toLowerCase();
   useRealtimeTables(["patients", "doctors", "referrals", "appointments", "user_activity", "user_sessions"], [["patients"], ["doctors"], ["referrals"], ["appointments"], ["activity-feed"], ["user-sessions"]]);
@@ -25,6 +29,17 @@ function AdminPage() {
   const { data: appointments = [] } = useQuery({ queryKey: ["appointments"], queryFn: fetchAppointments });
   const { data: activity = [] } = useQuery({ queryKey: ["activity-feed"], queryFn: fetchActivity });
   const { data: sessions = [] } = useQuery({ queryKey: ["user-sessions"], queryFn: fetchUserSessions });
+
+  const endSession = async (id: string) => {
+    const now = new Date().toISOString();
+    const { error } = await supabase.from("user_sessions").update({ logout_at: now, last_active_at: now }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Session marked logged out");
+    await Promise.all([
+      qc.invalidateQueries({ queryKey: ["user-sessions"] }),
+      qc.invalidateQueries({ queryKey: ["activity-feed"] }),
+    ]);
+  };
 
   const fPatients = useMemo(() => patients.filter((p) => !term || `${p.name} ${formatMrn(p)} ${p.phone ?? ""} ${(p.problems ?? []).join(" ")}`.toLowerCase().includes(term)), [patients, term]);
   const fDoctors = useMemo(() => doctors.filter((d) => !term || `${d.name} ${d.email ?? ""} ${d.specialty ?? ""} ${d.status}`.toLowerCase().includes(term)), [doctors, term]);
