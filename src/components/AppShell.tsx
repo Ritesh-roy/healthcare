@@ -114,15 +114,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // Admin route guard — only Admins can view /admin and /masters
   useEffect(() => {
-    if (
-      ready &&
-      user &&
-      (location.pathname.startsWith("/admin") || location.pathname.startsWith("/masters")) &&
-      user.role !== "Admin"
-    ) {
-      toast.error("Admin access only", { description: "You don't have permission to view this page." });
-      navigate({ to: "/" });
-    }
+    if (!ready || !user || !(location.pathname.startsWith("/admin") || location.pathname.startsWith("/masters")) || user.role === "Admin") return;
+    let cancelled = false;
+    void (async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (auth.user) {
+        const { data } = await supabase.from("user_roles").select("role").eq("user_id", auth.user.id).eq("role", "admin").maybeSingle();
+        if (data?.role === "admin") {
+          if (!cancelled) setStoredUser({ ...user, role: "Admin", organization: "Refera HQ" });
+          return;
+        }
+      }
+      if (!cancelled) {
+        toast.error("Admin access only", { description: "You don't have permission to view this page." });
+        navigate({ to: "/" });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [ready, user, location.pathname, navigate]);
 
   // Theme toggle (root <html> already uses .dark)
