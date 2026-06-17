@@ -160,3 +160,99 @@ function PatientsPage() {
     </HealixShell>
   );
 }
+
+function NewPatientDialog() {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    dob: "",
+    sex: "female",
+    phone: "",
+    email: "",
+    address: "",
+  });
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
+    setSaving(true);
+    const { data: auth } = await supabase.auth.getUser();
+    const { error } = await supabase.from("patients").insert({
+      name: form.name.trim(),
+      dob: form.dob || null,
+      sex: form.sex,
+      phone: form.phone || null,
+      email: form.email || null,
+      address: form.address || null,
+      created_by: auth.user?.id ?? null,
+    });
+    setSaving(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Patient added");
+    setForm({ name: "", dob: "", sex: "female", phone: "", email: "", address: "" });
+    setOpen(false);
+    qc.invalidateQueries({ queryKey: ["patients", "supabase"] });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="bg-gradient-primary text-primary-foreground shadow-glow gap-1.5">
+          <UserPlus className="h-4 w-4" /> <span className="hidden sm:inline">New patient</span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Add new patient</DialogTitle></DialogHeader>
+        <form onSubmit={submit} className="space-y-3">
+          <div>
+            <Label htmlFor="np-name">Full name</Label>
+            <Input id="np-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="np-dob">Date of birth</Label>
+              <Input id="np-dob" type="date" value={form.dob} onChange={(e) => setForm({ ...form, dob: e.target.value })} />
+            </div>
+            <div>
+              <Label htmlFor="np-sex">Sex</Label>
+              <select
+                id="np-sex"
+                value={form.sex}
+                onChange={(e) => setForm({ ...form, sex: e.target.value })}
+                className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm"
+              >
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="np-phone">Phone</Label>
+            <Input id="np-phone" type="tel" inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+          </div>
+          <div>
+            <Label htmlFor="np-email">Email</Label>
+            <Input id="np-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          </div>
+          <div>
+            <Label htmlFor="np-address">City / address</Label>
+            <Input id="np-address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button type="submit" disabled={saving}>{saving ? "Saving…" : "Add patient"}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
