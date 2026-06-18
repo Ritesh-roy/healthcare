@@ -257,6 +257,111 @@ export type Database = {
           },
         ]
       }
+      foot_assessments: {
+        Row: {
+          assessment_date: string
+          circulation_status: string
+          created_at: string
+          created_by: string | null
+          diabetes: boolean
+          diagnosis_notes: string | null
+          doctor_id: string | null
+          doctor_name: string | null
+          doctor_remarks: string | null
+          hypertension: boolean
+          id: string
+          left_foot_pressure: number | null
+          left_toe_pressure: number | null
+          observations: string | null
+          patient_age: number | null
+          patient_gender: string | null
+          patient_id: string
+          patient_name: string
+          patient_phone: string | null
+          previous_foot_surgery: boolean
+          recommendations: string[]
+          right_foot_pressure: number | null
+          right_toe_pressure: number | null
+          risk_level: string
+          smoking: boolean
+          symptoms: string[]
+          updated_at: string
+        }
+        Insert: {
+          assessment_date?: string
+          circulation_status?: string
+          created_at?: string
+          created_by?: string | null
+          diabetes?: boolean
+          diagnosis_notes?: string | null
+          doctor_id?: string | null
+          doctor_name?: string | null
+          doctor_remarks?: string | null
+          hypertension?: boolean
+          id?: string
+          left_foot_pressure?: number | null
+          left_toe_pressure?: number | null
+          observations?: string | null
+          patient_age?: number | null
+          patient_gender?: string | null
+          patient_id: string
+          patient_name: string
+          patient_phone?: string | null
+          previous_foot_surgery?: boolean
+          recommendations?: string[]
+          right_foot_pressure?: number | null
+          right_toe_pressure?: number | null
+          risk_level?: string
+          smoking?: boolean
+          symptoms?: string[]
+          updated_at?: string
+        }
+        Update: {
+          assessment_date?: string
+          circulation_status?: string
+          created_at?: string
+          created_by?: string | null
+          diabetes?: boolean
+          diagnosis_notes?: string | null
+          doctor_id?: string | null
+          doctor_name?: string | null
+          doctor_remarks?: string | null
+          hypertension?: boolean
+          id?: string
+          left_foot_pressure?: number | null
+          left_toe_pressure?: number | null
+          observations?: string | null
+          patient_age?: number | null
+          patient_gender?: string | null
+          patient_id?: string
+          patient_name?: string
+          patient_phone?: string | null
+          previous_foot_surgery?: boolean
+          recommendations?: string[]
+          right_foot_pressure?: number | null
+          right_toe_pressure?: number | null
+          risk_level?: string
+          smoking?: boolean
+          symptoms?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "foot_assessments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "foot_assessments_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       healix_conversations: {
         Row: {
           ai_response: string
