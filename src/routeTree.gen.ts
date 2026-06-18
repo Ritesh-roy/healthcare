@@ -16,6 +16,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as HospitalsRouteImport } from './routes/hospitals'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as HealixRouteImport } from './routes/healix'
+import { Route as FootAssessmentsRouteImport } from './routes/foot-assessments'
 import { Route as ConsultationsRouteImport } from './routes/consultations'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as IndexRouteImport } from './routes/index'
@@ -70,6 +71,11 @@ const HelpRoute = HelpRouteImport.update({
 const HealixRoute = HealixRouteImport.update({
   id: '/healix',
   path: '/healix',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FootAssessmentsRoute = FootAssessmentsRouteImport.update({
+  id: '/foot-assessments',
+  path: '/foot-assessments',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConsultationsRoute = ConsultationsRouteImport.update({
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRouteWithChildren
   '/consultations': typeof ConsultationsRoute
+  '/foot-assessments': typeof FootAssessmentsRoute
   '/healix': typeof HealixRouteWithChildren
   '/help': typeof HelpRoute
   '/hospitals': typeof HospitalsRoute
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRouteWithChildren
   '/consultations': typeof ConsultationsRoute
+  '/foot-assessments': typeof FootAssessmentsRoute
   '/help': typeof HelpRoute
   '/hospitals': typeof HospitalsRoute
   '/login': typeof LoginRoute
@@ -235,6 +243,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRouteWithChildren
   '/consultations': typeof ConsultationsRoute
+  '/foot-assessments': typeof FootAssessmentsRoute
   '/healix': typeof HealixRouteWithChildren
   '/help': typeof HelpRoute
   '/hospitals': typeof HospitalsRoute
@@ -266,6 +275,7 @@ export interface FileRouteTypes {
     | '/'
     | '/appointments'
     | '/consultations'
+    | '/foot-assessments'
     | '/healix'
     | '/help'
     | '/hospitals'
@@ -295,6 +305,7 @@ export interface FileRouteTypes {
     | '/'
     | '/appointments'
     | '/consultations'
+    | '/foot-assessments'
     | '/help'
     | '/hospitals'
     | '/login'
@@ -323,6 +334,7 @@ export interface FileRouteTypes {
     | '/'
     | '/appointments'
     | '/consultations'
+    | '/foot-assessments'
     | '/healix'
     | '/help'
     | '/hospitals'
@@ -353,6 +365,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppointmentsRoute: typeof AppointmentsRouteWithChildren
   ConsultationsRoute: typeof ConsultationsRoute
+  FootAssessmentsRoute: typeof FootAssessmentsRoute
   HealixRoute: typeof HealixRouteWithChildren
   HelpRoute: typeof HelpRoute
   HospitalsRoute: typeof HospitalsRoute
@@ -418,6 +431,13 @@ declare module '@tanstack/react-router' {
       path: '/healix'
       fullPath: '/healix'
       preLoaderRoute: typeof HealixRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/foot-assessments': {
+      id: '/foot-assessments'
+      path: '/foot-assessments'
+      fullPath: '/foot-assessments'
+      preLoaderRoute: typeof FootAssessmentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/consultations': {
@@ -606,6 +626,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppointmentsRoute: AppointmentsRouteWithChildren,
   ConsultationsRoute: ConsultationsRoute,
+  FootAssessmentsRoute: FootAssessmentsRoute,
   HealixRoute: HealixRouteWithChildren,
   HelpRoute: HelpRoute,
   HospitalsRoute: HospitalsRoute,
