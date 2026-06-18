@@ -27,6 +27,7 @@ import {
   ShieldAlert,
   Database,
   Hospital,
+  Footprints,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ const nav = [
   { to: "/appointments", label: "Appointments", icon: CalendarDays, hint: "Calendar" },
   { to: "/hospitals", label: "Hospitals", icon: Hospital, hint: "Chest hospitals" },
   { to: "/consultations", label: "Consultations", icon: FileText, hint: "Outcomes" },
+  { to: "/foot-assessments", label: "Foot Pressure", icon: Footprints, hint: "Diabetic foot assessments" },
   { to: "/admin", label: "Admin", icon: ShieldAlert, hint: "All data", adminOnly: true },
   { to: "/masters", label: "Masters", icon: Database, hint: "Users, Roles, Depts", adminOnly: true },
 ] as const;
@@ -69,6 +71,9 @@ function useTitleFromPath(pathname: string) {
     if (pathname.startsWith("/appointments")) return { title: "Appointments", crumbs: ["Workspace", "Appointments"] };
     if (pathname.startsWith("/hospitals")) return { title: "Hospitals", crumbs: ["Workspace", "Hospitals"] };
     if (pathname.startsWith("/consultations")) return { title: "Consultations", crumbs: ["Workspace", "Consultations"] };
+    if (pathname.startsWith("/foot-assessments/new")) return { title: "New foot assessment", crumbs: ["Workspace", "Foot Pressure", "New"] };
+    if (pathname.startsWith("/foot-assessments/")) return { title: "Foot assessment", crumbs: ["Workspace", "Foot Pressure", "Detail"] };
+    if (pathname.startsWith("/foot-assessments")) return { title: "Foot Pressure", crumbs: ["Workspace", "Foot Pressure"] };
     if (pathname.startsWith("/admin")) return { title: "Admin", crumbs: ["Workspace", "Admin"] };
     if (pathname.startsWith("/masters")) return { title: "Masters", crumbs: ["Workspace", "Masters"] };
     return { title: "Refera", crumbs: ["Workspace"] };
