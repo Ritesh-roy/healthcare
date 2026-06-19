@@ -176,10 +176,12 @@ function NewPatientDialog() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim()) {
-      toast.error("Name is required");
-      return;
-    }
+    if (!form.name.trim()) return toast.error("Name is required");
+    if (!form.dob) return toast.error("Date of birth is required");
+    if (!form.sex) return toast.error("Sex is required");
+    if (!form.phone.trim()) return toast.error("Phone is required");
+    if (!form.email.trim()) return toast.error("Email is required");
+    if (!form.address.trim()) return toast.error("City / address is required");
     setSaving(true);
     const { data: auth } = await supabase.auth.getUser();
     const { error } = await supabase.from("patients").insert({
@@ -218,13 +220,14 @@ function NewPatientDialog() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="np-dob">Date of birth</Label>
-              <Input id="np-dob" type="date" value={form.dob} onChange={(e) => setForm({ ...form, dob: e.target.value })} />
+              <Label htmlFor="np-dob">Date of birth <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
+              <Input id="np-dob" required type="date" value={form.dob} onChange={(e) => setForm({ ...form, dob: e.target.value })} />
             </div>
             <div>
-              <Label htmlFor="np-sex">Sex</Label>
+              <Label htmlFor="np-sex">Sex <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
               <select
                 id="np-sex"
+                required
                 value={form.sex}
                 onChange={(e) => setForm({ ...form, sex: e.target.value })}
                 className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm"
@@ -236,16 +239,16 @@ function NewPatientDialog() {
             </div>
           </div>
           <div>
-            <Label htmlFor="np-phone">Phone</Label>
-            <Input id="np-phone" type="tel" inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+            <Label htmlFor="np-phone">Phone <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
+            <Input id="np-phone" required type="tel" inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
           </div>
           <div>
-            <Label htmlFor="np-email">Email</Label>
-            <Input id="np-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <Label htmlFor="np-email">Email <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
+            <Input id="np-email" required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
           </div>
           <div>
-            <Label htmlFor="np-address">City / address</Label>
-            <Input id="np-address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+            <Label htmlFor="np-address">City / address <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
+            <Input id="np-address" required value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
