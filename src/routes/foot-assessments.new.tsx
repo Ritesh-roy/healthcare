@@ -233,7 +233,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className="space-y-1.5"><Label className="text-xs">{label}</Label>{children}</div>;
+  return <div className="space-y-1.5"><FieldLabel label={label} className="text-xs" />{children}</div>;
 }
 function Toggle({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
   return (

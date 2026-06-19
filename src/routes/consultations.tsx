@@ -151,5 +151,5 @@ function NewConsultationDialog({ patients, doctors, referrals }: { patients: Pat
 }
 
 function FormField({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className="space-y-1.5"><Label className="text-xs">{label}</Label>{children}</div>;
+  return <div className="space-y-1.5"><FieldLabel label={label} className="text-xs" />{children}</div>;
 }

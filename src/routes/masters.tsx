@@ -557,7 +557,7 @@ function THead({ cols }: { cols: string[] }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-sm">{label}</Label>
+      <FieldLabel label={label} className="text-sm" />
       {children}
     </div>
   );
