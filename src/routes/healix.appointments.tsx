@@ -82,6 +82,14 @@ function AppointmentsPage() {
       toast.error("Time is required");
       return;
     }
+    if (!form.duration) {
+      toast.error("Duration is required");
+      return;
+    }
+    if (!form.reason.trim()) {
+      toast.error("Reason is required");
+      return;
+    }
     if (form.date < today) {
       toast.error("Cannot book on a past date");
       return;
@@ -156,8 +164,8 @@ function AppointmentsPage() {
                 </div>
               </div>
               <div>
-                <Label>Reason</Label>
-                <Input value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="e.g. Diabetes follow-up" />
+                <Label>Reason <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
+                <Input required value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} placeholder="e.g. Diabetes follow-up" />
               </div>
             </div>
             <DialogFooter>
