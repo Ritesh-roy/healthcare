@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { FieldLabel } from "@/components/ui/required-label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchDoctors, fetchHospitals } from "@/lib/app-data";
@@ -131,7 +132,7 @@ function NewHospitalDialog() {
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className="space-y-1.5"><Label>{label}</Label>{children}</div>;
+  return <div className="space-y-1.5"><FieldLabel label={label} />{children}</div>;
 }
 
 function Stat({ label, value }: { label: string; value: string }) {

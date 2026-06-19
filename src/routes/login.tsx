@@ -221,7 +221,7 @@ function LoginPage() {
               <TabsContent value="signin" className="mt-5">
                 <form onSubmit={onSignIn} noValidate className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
+                    <Label htmlFor="email">Email <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -242,7 +242,7 @@ function LoginPage() {
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="password">Password *</Label>
+                      <Label htmlFor="password">Password <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
                       <button type="button" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => {
                         if (!email || !EMAIL_RE.test(email)) {
                           toast.error("Enter a valid email first.");
@@ -288,7 +288,7 @@ function LoginPage() {
               <TabsContent value="signup" className="mt-5">
                 <form onSubmit={onSignUp} noValidate className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full name *</Label>
+                    <Label htmlFor="name">Full name <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
                     <div className="relative">
                       <User2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -306,7 +306,7 @@ function LoginPage() {
                     <FieldError show={signupTouched.name} message={signupErrors.name} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="su-email">Work email *</Label>
+                    <Label htmlFor="su-email">Work email <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -325,7 +325,7 @@ function LoginPage() {
                     <FieldError show={signupTouched.email} message={signupErrors.email} />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="su-password">Password *</Label>
+                    <Label htmlFor="su-password">Password <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -345,7 +345,7 @@ function LoginPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label>Role *</Label>
+                      <Label>Role <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
                       <Select value={role} onValueChange={(v) => setRole(v as AuthUser["role"])}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -356,7 +356,7 @@ function LoginPage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="org">Organisation *</Label>
+                      <Label htmlFor="org">Organisation <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
                       <div className="relative">
                         <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input

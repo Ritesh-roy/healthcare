@@ -66,6 +66,22 @@ function AppointmentsPage() {
   });
 
   const onCreate = async () => {
+    if (!form.patientId) {
+      toast.error("Patient is required");
+      return;
+    }
+    if (!form.practitionerId) {
+      toast.error("Practitioner is required");
+      return;
+    }
+    if (!form.date) {
+      toast.error("Date is required");
+      return;
+    }
+    if (!form.time) {
+      toast.error("Time is required");
+      return;
+    }
     if (form.date < today) {
       toast.error("Cannot book on a past date");
       return;
@@ -106,7 +122,7 @@ function AppointmentsPage() {
             </DialogHeader>
             <div className="space-y-3">
               <div>
-                <Label>Patient</Label>
+                <Label>Patient <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
                 <Select value={form.patientId} onValueChange={(v) => setForm({ ...form, patientId: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -117,7 +133,7 @@ function AppointmentsPage() {
                 </Select>
               </div>
               <div>
-                <Label>Practitioner</Label>
+                <Label>Practitioner <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
                 <Select value={form.practitionerId} onValueChange={(v) => setForm({ ...form, practitionerId: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -131,11 +147,11 @@ function AppointmentsPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label>Date</Label>
+                  <Label>Date <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
                   <Input type="date" min={today} value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
                 </div>
                 <div>
-                  <Label>Time</Label>
+                  <Label>Time <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
                   <Input type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} />
                 </div>
               </div>

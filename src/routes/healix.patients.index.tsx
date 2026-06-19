@@ -213,7 +213,7 @@ function NewPatientDialog() {
         <DialogHeader><DialogTitle>Add new patient</DialogTitle></DialogHeader>
         <form onSubmit={submit} className="space-y-3">
           <div>
-            <Label htmlFor="np-name">Full name</Label>
+            <Label htmlFor="np-name">Full name <span aria-hidden="true" className="text-destructive ml-0.5">*</span></Label>
             <Input id="np-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           </div>
           <div className="grid grid-cols-2 gap-3">
