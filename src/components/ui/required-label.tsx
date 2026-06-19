@@ -19,7 +19,9 @@ export function FieldLabel({
   htmlFor?: string;
 }) {
   let text = label;
-  let isRequired = required ?? false;
+  // Healthcare policy: every form field is mandatory unless explicitly opted out
+  // by passing `required={false}`.
+  let isRequired = required ?? true;
   if (text.endsWith(" *")) {
     text = text.slice(0, -2);
     isRequired = true;
