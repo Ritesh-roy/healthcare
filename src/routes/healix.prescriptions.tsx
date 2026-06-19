@@ -48,6 +48,10 @@ function PrescriptionsPage() {
 
   const printRx = () => {
     if (typeof window === "undefined") return;
+    if (!patientId) { toast.error("Patient is required"); return; }
+    if (!practitionerId) { toast.error("Prescriber is required"); return; }
+    const hasLine = lines.some((l) => l.drug.trim());
+    if (!hasLine) { toast.error("Add at least one medication"); return; }
     const win = window.open("", "_blank", "width=820,height=900");
     if (!win) return;
     const html = `<!doctype html><html><head><title>Prescription — ${patient?.fullName ?? ""}</title>
