@@ -118,13 +118,13 @@ function NewPatientDialog() {
       <DialogContent>
         <DialogHeader><DialogTitle>Add new patient</DialogTitle></DialogHeader>
         <form onSubmit={submit} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field label="Full name *"><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></Field>
-          <Field label="MRN"><Input value={form.mrn} onChange={(e) => setForm({ ...form, mrn: e.target.value })} /></Field>
-          <Field label="Date of birth"><Input type="date" value={form.dob} onChange={(e) => setForm({ ...form, dob: e.target.value })} /></Field>
-          <Field label="Sex"><select value={form.sex} onChange={(e) => setForm({ ...form, sex: e.target.value })} className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm"><option value="F">Female</option><option value="M">Male</option><option value="Other">Other</option></select></Field>
-          <Field label="Phone"><Input type="tel" inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
-          <Field label="Email"><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
-          <div className="sm:col-span-2"><Field label="Active problems"><Input value={form.problems} onChange={(e) => setForm({ ...form, problems: e.target.value })} placeholder="Diabetes, asthma" /></Field></div>
+          <Field label="Full name"><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></Field>
+          <Field label="MRN"><Input value={form.mrn} onChange={(e) => setForm({ ...form, mrn: e.target.value })} required /></Field>
+          <Field label="Date of birth"><Input type="date" value={form.dob} onChange={(e) => setForm({ ...form, dob: e.target.value })} required /></Field>
+          <Field label="Sex"><select required value={form.sex} onChange={(e) => setForm({ ...form, sex: e.target.value })} className="w-full h-9 rounded-md border border-input bg-background px-2 text-sm"><option value="F">Female</option><option value="M">Male</option><option value="Other">Other</option></select></Field>
+          <Field label="Phone"><Input type="tel" inputMode="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required /></Field>
+          <Field label="Email"><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required /></Field>
+          <div className="sm:col-span-2"><Field label="Active problems"><Input value={form.problems} onChange={(e) => setForm({ ...form, problems: e.target.value })} placeholder="Diabetes, asthma" required /></Field></div>
           <DialogFooter className="sm:col-span-2"><Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="submit" disabled={saving}>{saving ? "Saving…" : "Add patient"}</Button></DialogFooter>
         </form>
       </DialogContent>
